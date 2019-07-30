@@ -4,9 +4,21 @@ version = "1.0.4"
 authors = ["koushiro <koushiro.cqx@gmail.com>"]
 edition = "2018"
 
+[[bin]]
+name = "chainx-cli"
+path = "src/bin/main.rs"
+
 [dependencies]
 structopt = "0.2"
 failure = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+parity-codec = { version = "3.5", features = ["derive"] }
 web3 = "0.8"
+
+# Substrate (The version used by ChainX)
+substrate-primitives = { git = "https://github.com/chainpool/substrate" }
+sr-primitives = { git = "https://github.com/chainpool/substrate" }
+# ChainX (mainnet branch)
+runtime = { package = "chainx-runtime", path = "../ChainX/runtime" }
+chainx-primitives = { path = "../ChainX/primitives" }
