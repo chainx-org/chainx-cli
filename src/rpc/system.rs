@@ -1,3 +1,4 @@
+use serde_json::Value;
 use web3::futures::Future;
 use web3::BatchTransport;
 
@@ -21,19 +22,19 @@ impl<T: BatchTransport> ChainXTransport<T> {
             .and_then(util::deserialize)
     }
 
-    pub fn system_properties(&self) -> impl Future<Item = serde_json::Value, Error = Error> {
+    pub fn system_properties(&self) -> impl Future<Item = Value, Error = Error> {
         self.execute("system_properties", vec![])
     }
 
-    pub fn system_health(&self) -> impl Future<Item = serde_json::Value, Error = Error> {
+    pub fn system_health(&self) -> impl Future<Item = Value, Error = Error> {
         self.execute("system_health", vec![])
     }
 
-    pub fn system_peers(&self) -> impl Future<Item = serde_json::Value, Error = Error> {
+    pub fn system_peers(&self) -> impl Future<Item = Value, Error = Error> {
         self.execute("system_peers", vec![])
     }
 
-    pub fn system_network_state(&self) -> impl Future<Item = serde_json::Value, Error = Error> {
+    pub fn system_network_state(&self) -> impl Future<Item = Value, Error = Error> {
         self.execute("system_networkState", vec![])
     }
 }
