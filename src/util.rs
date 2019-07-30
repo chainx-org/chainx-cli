@@ -28,14 +28,10 @@ pub fn gen_extrinsic(
     acc: Acceleration,
 ) -> String {
     let signed: runtime::Address = seed.account_id().into();
+    let index = Compact::<Index>::from(index);
+    let acc = Compact::<Acceleration>::from(acc);
     let pair = seed.pair();
-    let payload = (
-        Compact::<Index>::from(index),
-        function.clone(),
-        era,
-        hash,
-        Compact::<Acceleration>::from(acc),
-    );
+    let payload = (index, function.clone(), era, hash, acc);
     let signature = payload.using_encoded(|data| {
         if data.len() > 256 {
             pair.sign(&blake2_256(data))
@@ -45,7 +41,9 @@ pub fn gen_extrinsic(
     });
 
     // 编码字段 1 元组(发送人，签名)，func | 签名：(index, func, era, hash, acceleration)
-    let utx = runtime::UncheckedExtrinsic::new_signed(index, function, signed, signature, era, acc);
-    let t: Vec<u8> = utx.encode();
-    format!("0x{:}", HexDisplay::from(&t))
+    let unchecked_extrinsic = runtime::UncheckedExtrinsic {
+        signature: Some((signed, signature, index, era, acc)),
+        function,
+    };
+    format!("0x{:}", HexDisplay::from(&unchecked_extrinsic.encode()))
 }
