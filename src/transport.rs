@@ -1,3 +1,4 @@
+use serde_json::Value;
 use web3::futures::{future, Future};
 use web3::transports::{EventLoopHandle, Http, WebSocket};
 use web3::BatchTransport;
@@ -32,8 +33,8 @@ impl<T: BatchTransport> ChainXTransport<T> {
     pub fn submit_batch(
         &self,
         method: &str,
-        batch_params: Vec<Vec<serde_json::Value>>,
-    ) -> impl Future<Item = Vec<Result<serde_json::Value>>, Error = Error> {
+        batch_params: Vec<Vec<Value>>,
+    ) -> impl Future<Item = Vec<Result<Value>>, Error = Error> {
         let requests = batch_params
             .into_iter()
             .map(|params| (method, params))
@@ -43,8 +44,8 @@ impl<T: BatchTransport> ChainXTransport<T> {
 
     pub fn submit_batch_opt(
         &self,
-        requests: Vec<(&str, Vec<serde_json::Value>)>,
-    ) -> impl Future<Item = Vec<Result<serde_json::Value>>, Error = Error> {
+        requests: Vec<(&str, Vec<Value>)>,
+    ) -> impl Future<Item = Vec<Result<Value>>, Error = Error> {
         let requests = requests
             .into_iter()
             .map(|(method, params)| self.transport.prepare(method, params))
@@ -64,8 +65,8 @@ impl<T: BatchTransport> ChainXTransport<T> {
     pub fn execute(
         &self,
         method: &str,
-        params: Vec<serde_json::Value>,
-    ) -> impl Future<Item = serde_json::Value, Error = Error> {
+        params: Vec<Value>,
+    ) -> impl Future<Item = Value, Error = Error> {
         self.transport.execute(method, params).map_err(Into::into)
     }
 }
