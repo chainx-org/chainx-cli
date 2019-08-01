@@ -13,12 +13,12 @@ impl<T: BatchTransport> ChainXTransport<T> {
     }
 
     pub fn system_version(&self) -> impl Future<Item = String, Error = Error> {
-        self.execute("system_name", vec![])
+        self.execute("system_version", vec![])
             .and_then(util::deserialize)
     }
 
     pub fn system_chain(&self) -> impl Future<Item = String, Error = Error> {
-        self.execute("system_name", vec![])
+        self.execute("system_chain", vec![])
             .and_then(util::deserialize)
     }
 

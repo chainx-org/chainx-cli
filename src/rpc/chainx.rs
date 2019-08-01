@@ -14,6 +14,17 @@ impl<T: BatchTransport> ChainXTransport<T> {
         self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
     }
 
+    pub fn next_renominate(
+        &self,
+        who: AccountId,
+        hash: Option<Hash>,
+    ) -> impl Future<Item = Value, Error = Error> {
+        self.execute(
+            "chainx_getNextRenominateByAccount",
+            vec![util::serialize(who), util::serialize(hash)],
+        )
+    }
+
     pub fn assets_by_account(
         &self,
         who: AccountId,
@@ -48,7 +59,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn verify_addr_validity(
+    pub fn verify_addr(
         &self,
         token: String,
         addr: String,
@@ -66,7 +77,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn withdrawal_limit(
+    pub fn withdraw_limit(
         &self,
         token: String,
         hash: Option<Hash>,
@@ -88,7 +99,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn deposit_list(
+    pub fn withdraw_list(
         &self,
         chain: Chain,
         page_index: u32,
@@ -96,7 +107,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         hash: Option<Hash>,
     ) -> impl Future<Item = Value, Error = Error> {
         self.execute(
-            "chainx_getDepositList",
+            "chainx_getWithdrawalList",
             vec![
                 util::serialize(chain),
                 util::serialize(page_index),
@@ -106,7 +117,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn withdrawal_list(
+    pub fn deposit_list(
         &self,
         chain: Chain,
         page_index: u32,
@@ -114,7 +125,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         hash: Option<Hash>,
     ) -> impl Future<Item = Value, Error = Error> {
         self.execute(
-            "chainx_getWithdrawalList",
+            "chainx_getDepositList",
             vec![
                 util::serialize(chain),
                 util::serialize(page_index),
@@ -135,8 +146,15 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
-        self.execute("chainx_getIntentions", vec![util::serialize(hash)])
+    pub fn psedu_nomination_records(
+        &self,
+        who: AccountId,
+        hash: Option<Hash>,
+    ) -> impl Future<Item = Value, Error = Error> {
+        self.execute(
+            "chainx_getPseduNominationRecords",
+            vec![util::serialize(who), util::serialize(hash)],
+        )
     }
 
     pub fn intention(
@@ -150,19 +168,12 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn psedu_intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
-        self.execute("chainx_getPseduIntentions", vec![util::serialize(hash)])
+    pub fn intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+        self.execute("chainx_getIntentions", vec![util::serialize(hash)])
     }
 
-    pub fn psedu_nomination_records(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
-        self.execute(
-            "chainx_getPseduNominationRecords",
-            vec![util::serialize(who), util::serialize(hash)],
-        )
+    pub fn psedu_intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+        self.execute("chainx_getPseduIntentions", vec![util::serialize(hash)])
     }
 
     pub fn trading_pairs(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {

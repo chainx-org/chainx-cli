@@ -13,17 +13,17 @@ impl<T: BatchTransport> ChainXTransport<T> {
         self.execute("chain_getHeader", vec![util::serialize(hash)])
     }
 
-    pub fn block(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
-        self.execute("chain_getHeader", vec![util::serialize(hash)])
-    }
-
-    pub fn block_hash(&self, number: Option<u64>) -> impl Future<Item = Hash, Error = Error> {
-        self.execute("chain_getHeader", vec![util::serialize(number)])
-            .and_then(util::deserialize)
-    }
-
     pub fn finalized_head(&self) -> impl Future<Item = Hash, Error = Error> {
         self.execute("chain_getFinalizedHead", vec![])
             .and_then(util::deserialize)
+    }
+
+    pub fn block_hash(&self, number: Option<u64>) -> impl Future<Item = Hash, Error = Error> {
+        self.execute("chain_getBlockHash", vec![util::serialize(number)])
+            .and_then(util::deserialize)
+    }
+
+    pub fn block(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+        self.execute("chain_getBlock", vec![util::serialize(hash)])
     }
 }

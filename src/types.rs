@@ -40,3 +40,9 @@ impl RawSeed {
         AccountId::from_slice(pair.public().as_slice())
     }
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
