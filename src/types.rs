@@ -46,3 +46,23 @@ pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
+
+#[derive(Debug)]
+pub enum HeightOrHash {
+    Height(u64),
+    Hash(String),
+}
+
+impl std::str::FromStr for HeightOrHash {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            return Ok(HeightOrHash::Hash(s.to_string()));
+        }
+        match s.parse::<u64>() {
+            Ok(height) => Ok(HeightOrHash::Height(height)),
+            Err(_) => Err("The param is neither a 0x-prefix hex hash nor a number"),
+        }
+    }
+}

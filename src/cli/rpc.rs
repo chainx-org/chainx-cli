@@ -1,5 +1,7 @@
 use structopt::StructOpt;
 
+use crate::types::HeightOrHash;
+
 #[derive(Debug, StructOpt)]
 pub enum RpcCommand {
     // Chain RPC
@@ -22,11 +24,11 @@ pub enum RpcCommand {
         height: Option<u64>,
     },
     /// Get header and body of a relay chain block.
-    #[structopt(name = "block_by_hash")]
-    BlockByHash {
-        /// 0x-prefix hex block hash string [default: latest block hash]
-        #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+    #[structopt(name = "block")]
+    Block {
+        /// 0x-prefix hex block hash string or block height [default: hash or height of the latest block]
+        #[structopt(value_name = "HASH/HEIGHT")]
+        hash_or_height: Option<HeightOrHash>,
     },
 
     // System Rpc
@@ -55,12 +57,6 @@ pub enum RpcCommand {
 
     // ChainX Rpc
     // ========================================================================
-    #[structopt(name = "block_by_number")]
-    BlockByNumber {
-        /// Block height [default: latest block height]
-        #[structopt(value_name = "NUM")]
-        height: Option<u64>,
-    },
     #[structopt(name = "next_renominate")]
     NextRenominate {
         /// 0x-prefix hex hash string for account
