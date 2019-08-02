@@ -19,9 +19,3 @@ web3 = "0.8"
 [dependencies.substrate-primitives]
 git = "https://github.com/paritytech/substrate"
 tag = "v1.0.0"
-
-[dependencies.blake2-rfc]
-version = "0.2"
-
-[dependencies.base58]
-version = "0.1"
