@@ -1,6 +1,11 @@
 use structopt::StructOpt;
+use web3::futures::Future;
 
-use crate::types::HeightOrHash;
+use substrate_primitives::crypto::UncheckedInto;
+
+use crate::error::Result;
+use crate::rpc::{AuthorRpc, ChainRpc, ChainXRpc, StateRpc, SystemRpc};
+use crate::types::{Chain, Hash, HeightOrHash};
 
 #[derive(Debug, StructOpt)]
 pub enum RpcCommand {
@@ -11,7 +16,7 @@ pub enum RpcCommand {
     Header {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     /// Get hash of the last finalized block in the canon chain.
     #[structopt(name = "header_finalized")]
@@ -23,13 +28,13 @@ pub enum RpcCommand {
         #[structopt(value_name = "NUM")]
         height: Option<u64>,
     },
-    /// Get header and body of a relay chain block.
-    #[structopt(name = "block")]
-    Block {
-        /// 0x-prefix hex block hash string or block height [default: hash or height of the latest block]
-        #[structopt(value_name = "HASH/HEIGHT")]
-        hash_or_height: Option<HeightOrHash>,
-    },
+    //    /// Get header and body of a relay chain block.
+    //    #[structopt(name = "block")]
+    //    Block {
+    //        /// 0x-prefix hex block hash string or block height [default: hash or height of the latest block]
+    //        #[structopt(value_name = "HASH/HEIGHT")]
+    //        hash_or_height: Option<HeightOrHash>,
+    //    },
 
     // System Rpc
     // ========================================================================
@@ -61,16 +66,16 @@ pub enum RpcCommand {
     NextRenominate {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "asset")]
     Asset {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// Page index
         #[structopt(value_name = "INDEX", default_value = "0")]
         index: u32,
@@ -79,7 +84,7 @@ pub enum RpcCommand {
         size: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "assets")]
     Assets {
@@ -91,7 +96,7 @@ pub enum RpcCommand {
         size: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "verify_addr")]
     VerifyAddr {
@@ -106,7 +111,7 @@ pub enum RpcCommand {
         memo: String,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "withdraw_limit")]
     WithdrawLimit {
@@ -115,7 +120,7 @@ pub enum RpcCommand {
         token: String,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "deposit_limit")]
     DepositLimit {
@@ -124,13 +129,13 @@ pub enum RpcCommand {
         token: String,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "withdraw_list")]
     WithdrawList {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
-        chain: String,
+        chain: Chain,
         /// Page index
         #[structopt(value_name = "INDEX", default_value = "0")]
         index: u32,
@@ -139,13 +144,13 @@ pub enum RpcCommand {
         size: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "deposit_list")]
     DepositList {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
-        chain: String,
+        chain: Chain,
         /// Page index
         #[structopt(value_name = "INDEX", default_value = "0")]
         index: u32,
@@ -154,52 +159,52 @@ pub enum RpcCommand {
         size: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "nomination_records")]
     NominationRecords {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "psedu_nomination_records")]
     PseduNominationRecords {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "intention")]
     Intention {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "intentions")]
     Intentions {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "psedu_intentions")]
     PseduIntentions {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "trading_pairs")]
     TradingPairs {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "quotations")]
     Quotations {
@@ -210,13 +215,13 @@ pub enum RpcCommand {
         piece: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "orders")]
     Orders {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// Page index
         #[structopt(value_name = "INDEX", default_value = "0")]
         index: u32,
@@ -225,74 +230,166 @@ pub enum RpcCommand {
         size: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "addr_by_account")]
     AddrByAccount {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
-        chain: String,
+        chain: Chain,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "trustee_session")]
     TrusteeSession {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
-        chain: String,
-        /// Trustee session number, [0, latest) [default: latest trustee session number]
-        #[structopt(value_name = "NUM")]
-        number: Option<u32>,
+        chain: Chain,
+        /// Trustee session era, [0, latest) [default: latest trustee session era]
+        #[structopt(value_name = "ERA")]
+        era: Option<u32>,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "trustee_info")]
     TrusteeInfo {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
-        who: String,
+        who: Hash,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "call_fee")]
     CallFee {
         /// The parameters of Call
         #[structopt(value_name = "PARAMS")]
-        call_params: String,
+        call: String,
         /// The length of transaction
         tx_len: u64,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "withdraw_tx")]
     WithdrawTx {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
-        chain: String,
+        chain: Chain,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "mock_btc_new_trustees")]
-    MockBitcoinNewTrustees {
+    MockBtcNewTrustees {
         /// 0x-prefix hex hash string for new trustee accounts
         #[structopt(value_name = "ACCOUNTS")]
-        candidates: Vec<String>,
+        candidates: Vec<Hash>,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
     #[structopt(name = "particular_accounts")]
     ParticularAccounts {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
-        hash: Option<String>,
+        hash: Option<Hash>,
     },
+}
+
+impl RpcCommand {
+    /// Dispatch rpc subcommand
+    pub fn dispatch<Rpc>(self, rpc: Rpc) -> Result<()>
+    where
+        Rpc: AuthorRpc + ChainRpc + ChainXRpc + StateRpc + SystemRpc,
+    {
+        use RpcCommand::*;
+        let fut = match self {
+            // Chain Rpc
+            Header { hash } => rpc.header(hash),
+            FinalizedHeader => rpc.finalized_head(),
+            BlockHash { height } => rpc.block_hash(height),
+            //            Block { hash_or_height } => {
+            //                rpc.block_by_number(hash_or_height);
+            //                rpc.block_by_hash(hash_or_height);
+            //            }
+
+            // System Rpc
+            SystemName => rpc.system_name(),
+            SystemVersion => rpc.system_version(),
+            SystemChain => rpc.system_chain(),
+            SystemProperties => rpc.system_properties(),
+            SystemHealth => rpc.system_health(),
+            SystemPeers => rpc.system_peers(),
+            SystemNetworkState => rpc.system_network_state(),
+
+            // ChainX Rpc
+            NextRenominate { who, hash } => rpc.next_renominate(who.unchecked_into(), hash),
+            Asset {
+                who,
+                index,
+                size,
+                hash,
+            } => rpc.asset(who.unchecked_into(), index, size, hash),
+            Assets { index, size, hash } => rpc.assets(index, size, hash),
+            VerifyAddr {
+                token,
+                addr,
+                memo,
+                hash,
+            } => rpc.verify_addr(token, addr, memo, hash),
+            WithdrawLimit { token, hash } => rpc.withdraw_limit(token, hash),
+            DepositLimit { token, hash } => rpc.deposit_limit(token, hash),
+            WithdrawList {
+                chain,
+                index,
+                size,
+                hash,
+            } => rpc.withdraw_list(chain, index, size, hash),
+            DepositList {
+                chain,
+                index,
+                size,
+                hash,
+            } => rpc.deposit_list(chain, index, size, hash),
+            NominationRecords { who, hash } => rpc.nomination_records(who.unchecked_into(), hash),
+            PseduNominationRecords { who, hash } => {
+                rpc.psedu_nomination_records(who.unchecked_into(), hash)
+            }
+            Intention { who, hash } => rpc.intention(who.unchecked_into(), hash),
+            Intentions { hash } => rpc.intentions(hash),
+            PseduIntentions { hash } => rpc.psedu_intentions(hash),
+            TradingPairs { hash } => rpc.trading_pairs(hash),
+            Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
+            Orders {
+                who,
+                index,
+                size,
+                hash,
+            } => rpc.orders(who.unchecked_into(), index, size, hash),
+            AddrByAccount { who, chain, hash } => {
+                rpc.addr_by_account(who.unchecked_into(), chain, hash)
+            }
+            TrusteeSession { chain, era, hash } => rpc.trustee_session_info(chain, era, hash),
+            TrusteeInfo { who, hash } => rpc.trustee_by_account(who.unchecked_into(), hash),
+            CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),
+            WithdrawTx { chain, hash } => rpc.withdraw_tx(chain, hash),
+            MockBtcNewTrustees { candidates, hash } => rpc.mock_btc_new_trustees(
+                candidates
+                    .into_iter()
+                    .map(UncheckedInto::unchecked_into)
+                    .collect(),
+                hash,
+            ),
+            ParticularAccounts { hash } => rpc.particular_accounts(hash),
+        };
+        let result = fut.wait()?;
+        println!("{:?}", result);
+        Ok(())
+    }
 }

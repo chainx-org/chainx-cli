@@ -1,14 +1,12 @@
 use serde_json::Value;
-use web3::futures::Future;
 use web3::BatchTransport;
 
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::util;
 
 pub trait SystemRpc {
-    fn system_name(&self) -> BoxFuture<String>;
-    fn system_version(&self) -> BoxFuture<String>;
-    fn system_chain(&self) -> BoxFuture<String>;
+    fn system_name(&self) -> BoxFuture<Value>;
+    fn system_version(&self) -> BoxFuture<Value>;
+    fn system_chain(&self) -> BoxFuture<Value>;
     fn system_properties(&self) -> BoxFuture<Value>;
     fn system_health(&self) -> BoxFuture<Value>;
     fn system_peers(&self) -> BoxFuture<Value>;
@@ -16,25 +14,16 @@ pub trait SystemRpc {
 }
 
 impl<T: BatchTransport + 'static> SystemRpc for ChainXTransport<T> {
-    fn system_name(&self) -> BoxFuture<String> {
-        Box::new(
-            self.execute("system_name", vec![])
-                .and_then(util::deserialize),
-        )
+    fn system_name(&self) -> BoxFuture<Value> {
+        self.execute("system_name", vec![])
     }
 
-    fn system_version(&self) -> BoxFuture<String> {
-        Box::new(
-            self.execute("system_version", vec![])
-                .and_then(util::deserialize),
-        )
+    fn system_version(&self) -> BoxFuture<Value> {
+        self.execute("system_version", vec![])
     }
 
-    fn system_chain(&self) -> BoxFuture<String> {
-        Box::new(
-            self.execute("system_chain", vec![])
-                .and_then(util::deserialize),
-        )
+    fn system_chain(&self) -> BoxFuture<Value> {
+        self.execute("system_chain", vec![])
     }
 
     fn system_properties(&self) -> BoxFuture<Value> {

@@ -2,10 +2,8 @@ use serde_json::Value;
 use web3::futures::Future;
 use web3::BatchTransport;
 
-use chainx_primitives::Hash;
-
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::{DecodeWrapper, EncodeWrapper};
+use crate::types::{DecodeWrapper, EncodeWrapper, Hash};
 use crate::util;
 
 pub trait StateRpc {

@@ -16,9 +16,6 @@ serde_json = "1.0"
 parity-codec = { version = "3.5", features = ["derive"] }
 web3 = "0.8"
 
-# Substrate (The version used by ChainX)
-substrate-primitives = { git = "https://github.com/chainpool/substrate" }
-sr-primitives = { git = "https://github.com/chainpool/substrate" }
-# ChainX (mainnet branch)
-runtime = { package = "chainx-runtime", path = "../ChainX/runtime" }
-chainx-primitives = { path = "../ChainX/primitives" }
+[dependencies.substrate-primitives]
+git = "https://github.com/paritytech/substrate"
+tag = "v1.0.0"

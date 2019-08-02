@@ -1,20 +1,16 @@
 use serde_json::Value;
-use web3::futures::Future;
 use web3::BatchTransport;
 
-use chainx_primitives::{AccountId, BlockNumber, Hash};
-
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::{Chain, TradingPairIndex};
+use crate::types::{AccountId, Chain, Hash, TradingPairIndex};
 use crate::util;
 
 pub trait ChainXRpc {
     fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value>;
 
-    fn next_renominate(&self, who: AccountId, hash: Option<Hash>)
-        -> BoxFuture<Option<BlockNumber>>;
+    fn next_renominate(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn assets_by_account(
+    fn asset(
         &self,
         who: AccountId,
         page_index: u32,
@@ -30,7 +26,7 @@ pub trait ChainXRpc {
         addr: String,
         memo: String,
         hash: Option<Hash>,
-    ) -> BoxFuture<Option<bool>>;
+    ) -> BoxFuture<Value>;
 
     fn withdraw_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value>;
 
@@ -74,27 +70,23 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn address_by_account(
-        &self,
-        who: AccountId,
-        chain: Chain,
-        hash: Option<Hash>,
-    ) -> BoxFuture<Option<Vec<String>>>;
+    fn addr_by_account(&self, who: AccountId, chain: Chain, hash: Option<Hash>)
+        -> BoxFuture<Value>;
 
     fn trustee_session_info(
         &self,
         chain: Chain,
-        number: Option<u32>,
+        era: Option<u32>,
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
     fn trustee_by_account(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn withdraw_tx(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn mock_bitcoin_new_trustees(
+    fn mock_btc_new_trustees(
         &self,
         candidates: Vec<AccountId>,
         hash: Option<Hash>,
@@ -108,21 +100,14 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
     }
 
-    fn next_renominate(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> BoxFuture<Option<BlockNumber>> {
-        Box::new(
-            self.execute(
-                "chainx_getNextRenominateByAccount",
-                vec![util::serialize(who), util::serialize(hash)],
-            )
-            .and_then(util::deserialize),
+    fn next_renominate(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getNextRenominateByAccount",
+            vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    fn assets_by_account(
+    fn asset(
         &self,
         who: AccountId,
         page_index: u32,
@@ -157,18 +142,15 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         addr: String,
         memo: String,
         hash: Option<Hash>,
-    ) -> BoxFuture<Option<bool>> {
-        Box::new(
-            self.execute(
-                "chainx_verifyAddressValidity",
-                vec![
-                    util::serialize(token),
-                    util::serialize(addr),
-                    util::serialize(memo),
-                    util::serialize(hash),
-                ],
-            )
-            .and_then(util::deserialize),
+    ) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_verifyAddressValidity",
+            vec![
+                util::serialize(token),
+                util::serialize(addr),
+                util::serialize(memo),
+                util::serialize(hash),
+            ],
         )
     }
 
@@ -284,22 +266,19 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn address_by_account(
+    fn addr_by_account(
         &self,
         who: AccountId,
         chain: Chain,
         hash: Option<Hash>,
-    ) -> BoxFuture<Option<Vec<String>>> {
-        Box::new(
-            self.execute(
-                "chainx_getAddressByAccount",
-                vec![
-                    util::serialize(who),
-                    util::serialize(chain),
-                    util::serialize(hash),
-                ],
-            )
-            .and_then(util::deserialize),
+    ) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getAddressByAccount",
+            vec![
+                util::serialize(who),
+                util::serialize(chain),
+                util::serialize(hash),
+            ],
         )
     }
 
@@ -337,11 +316,14 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn withdraw_tx(&self, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute("chainx_getWithdrawTx", vec![util::serialize(hash)])
+    fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getWithdrawTx",
+            vec![util::serialize(chain), util::serialize(hash)],
+        )
     }
 
-    fn mock_bitcoin_new_trustees(
+    fn mock_btc_new_trustees(
         &self,
         candidates: Vec<AccountId>,
         hash: Option<Hash>,

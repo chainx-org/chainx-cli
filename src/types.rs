@@ -1,9 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-use substrate_primitives::crypto::Pair as TraitPair;
-use substrate_primitives::ed25519::Pair;
+pub type AccountId = substrate_primitives::ed25519::Public;
+pub type Hash = substrate_primitives::H256;
+pub type TradingPairIndex = u32;
 
-use chainx_primitives::AccountId;
+#[derive(Clone, Serialize, Deserialize)]
+pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
+
+pub struct Page {
+    pub index: u32,
+    pub size: u32,
+}
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum Chain {
@@ -12,40 +22,18 @@ pub enum Chain {
     Ethereum,
 }
 
-pub type TradingPairIndex = u32;
+impl std::str::FromStr for Chain {
+    type Err = &'static str;
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Debug)]
-pub struct RawSeed(String);
-
-impl RawSeed {
-    pub fn new<S: Into<String>>(seed: S) -> Self {
-        Self(seed.into())
-    }
-
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
-
-    // Unsafe, for test only
-    pub fn pair(&self) -> Pair {
-        let seed = self.as_str();
-        let mut s: [u8; 32] = [b' '; 32];
-        let len = ::std::cmp::min(32, seed.len());
-        s[..len].copy_from_slice(&seed.as_bytes()[..len]);
-        Pair::from_seed(s)
-    }
-
-    pub fn account_id(&self) -> AccountId {
-        let pair = Self::pair(self);
-        AccountId::from_slice(pair.public().as_slice())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ChainX" | "PCX" => Ok(Chain::Bitcoin),
+            "Bitcoin" | "BTC" => Ok(Chain::Bitcoin),
+            "Ethereum" | "ETH" => Ok(Chain::Ethereum),
+            _ => Err("Unknown Chain Type"),
+        }
     }
 }
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
 
 #[derive(Debug)]
 pub enum HeightOrHash {
