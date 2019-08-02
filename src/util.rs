@@ -19,6 +19,7 @@ pub fn deserialize<T: DeserializeOwned>(value: serde_json::Value) -> Result<T> {
     serde_json::from_value(value).map_err(Into::into)
 }
 
+#[allow(unused)]
 pub fn gen_extrinsic(
     seed: &RawSeed,
     index: Index,

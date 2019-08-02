@@ -2,36 +2,131 @@ use serde_json::Value;
 use web3::futures::Future;
 use web3::BatchTransport;
 
-use chainx_primitives::{AccountId, Hash};
+use chainx_primitives::{AccountId, BlockNumber, Hash};
 
-use crate::error::Error;
-use crate::transport::ChainXTransport;
+use crate::transport::{BoxFuture, ChainXTransport};
 use crate::types::{Chain, TradingPairIndex};
 use crate::util;
 
-impl<T: BatchTransport> ChainXTransport<T> {
-    pub fn block_by_number(&self, number: Option<u64>) -> impl Future<Item = Value, Error = Error> {
-        self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
-    }
+pub trait ChainXRpc {
+    fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value>;
 
-    pub fn next_renominate(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
-        self.execute(
-            "chainx_getNextRenominateByAccount",
-            vec![util::serialize(who), util::serialize(hash)],
-        )
-    }
+    fn next_renominate(&self, who: AccountId, hash: Option<Hash>)
+        -> BoxFuture<Option<BlockNumber>>;
 
-    pub fn assets_by_account(
+    fn assets_by_account(
         &self,
         who: AccountId,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value>;
+
+    fn assets(&self, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn verify_addr(
+        &self,
+        token: String,
+        addr: String,
+        memo: String,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Option<bool>>;
+
+    fn withdraw_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn deposit_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn withdraw_list(
+        &self,
+        chain: Chain,
+        page_index: u32,
+        page_size: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
+
+    fn deposit_list(
+        &self,
+        chain: Chain,
+        page_index: u32,
+        page_size: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
+
+    fn nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn psedu_nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn intention(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn intentions(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn psedu_intentions(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn trading_pairs(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn quotations(&self, id: TradingPairIndex, piece: u32, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn orders(
+        &self,
+        who: AccountId,
+        page_index: u32,
+        page_size: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
+
+    fn address_by_account(
+        &self,
+        who: AccountId,
+        chain: Chain,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Option<Vec<String>>>;
+
+    fn trustee_session_info(
+        &self,
+        chain: Chain,
+        number: Option<u32>,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
+
+    fn trustee_by_account(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn withdraw_tx(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn mock_bitcoin_new_trustees(
+        &self,
+        candidates: Vec<AccountId>,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
+
+    fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+}
+
+impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
+    fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value> {
+        self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
+    }
+
+    fn next_renominate(
+        &self,
+        who: AccountId,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Option<BlockNumber>> {
+        self.execute(
+            "chainx_getNextRenominateByAccount",
+            vec![util::serialize(who), util::serialize(hash)],
+        )
+        .and_then(util::deserialize)
+    }
+
+    fn assets_by_account(
+        &self,
+        who: AccountId,
+        page_index: u32,
+        page_size: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getAssetsByAccount",
             vec![
@@ -43,12 +138,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn assets(
-        &self,
-        page_index: u32,
-        page_size: u32,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn assets(&self, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getAssets",
             vec![
@@ -59,13 +149,13 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn verify_addr(
+    fn verify_addr(
         &self,
         token: String,
         addr: String,
         memo: String,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Option<bool>> {
         self.execute(
             "chainx_verifyAddressValidity",
             vec![
@@ -75,37 +165,30 @@ impl<T: BatchTransport> ChainXTransport<T> {
                 util::serialize(hash),
             ],
         )
+        .and_then(util::deserialize)
     }
 
-    pub fn withdraw_limit(
-        &self,
-        token: String,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn withdraw_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getWithdrawalLimitByToken",
             vec![util::serialize(token), util::serialize(hash)],
         )
     }
 
-    pub fn deposit_limit(
-        &self,
-        token: String,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn deposit_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getDepositLimitByToken",
             vec![util::serialize(token), util::serialize(hash)],
         )
     }
 
-    pub fn withdraw_list(
+    fn withdraw_list(
         &self,
         chain: Chain,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getWithdrawalList",
             vec![
@@ -117,13 +200,13 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn deposit_list(
+    fn deposit_list(
         &self,
         chain: Chain,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getDepositList",
             vec![
@@ -135,57 +218,40 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn nomination_records(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    pub fn psedu_nomination_records(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn psedu_nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getPseduNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    pub fn intention(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn intention(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getIntentionByAccount",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    pub fn intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+    fn intentions(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_getIntentions", vec![util::serialize(hash)])
     }
 
-    pub fn psedu_intentions(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+    fn psedu_intentions(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_getPseduIntentions", vec![util::serialize(hash)])
     }
 
-    pub fn trading_pairs(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+    fn trading_pairs(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_getTradingPairs", vec![util::serialize(hash)])
     }
 
-    pub fn quotations(
-        &self,
-        id: TradingPairIndex,
-        piece: u32,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn quotations(&self, id: TradingPairIndex, piece: u32, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getQuotations",
             vec![
@@ -196,13 +262,13 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn orders(
+    fn orders(
         &self,
         who: AccountId,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getOrders",
             vec![
@@ -214,12 +280,12 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn address_by_account(
+    fn address_by_account(
         &self,
         who: AccountId,
         chain: Chain,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Option<Vec<String>>> {
         self.execute(
             "chainx_getAddressByAccount",
             vec![
@@ -228,14 +294,15 @@ impl<T: BatchTransport> ChainXTransport<T> {
                 util::serialize(hash),
             ],
         )
+        .and_then(util::deserialize)
     }
 
-    pub fn trustee_session_info(
+    fn trustee_session_info(
         &self,
         chain: Chain,
         number: Option<u32>,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getTrusteeSessionInfo",
             vec![
@@ -246,52 +313,40 @@ impl<T: BatchTransport> ChainXTransport<T> {
         )
     }
 
-    pub fn trustee_by_account(
-        &self,
-        who: AccountId,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn trustee_by_account(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getTrusteeInfoByAccount",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    pub fn call_fee(
-        &self,
-        call_params: String,
-        tx_length: u64,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getFeeByCallAndLength",
             vec![
                 util::serialize(call_params),
-                util::serialize(tx_length),
+                util::serialize(tx_len),
                 util::serialize(hash),
             ],
         )
     }
 
-    pub fn withdraw_tx(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+    fn withdraw_tx(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_getWithdrawTx", vec![util::serialize(hash)])
     }
 
-    pub fn mock_bitcoin_new_trustees(
+    fn mock_bitcoin_new_trustees(
         &self,
         candidates: Vec<AccountId>,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    ) -> BoxFuture<Value> {
         self.execute(
             "chainx_getMockBitcoinNewTrustees",
             vec![util::serialize(candidates), util::serialize(hash)],
         )
     }
 
-    pub fn particular_accounts(
-        &self,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_particularAccounts", vec![util::serialize(hash)])
     }
 }

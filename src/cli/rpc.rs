@@ -266,7 +266,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "PARAMS")]
         call_params: String,
         /// The length of transaction
-        tx_length: u64,
+        tx_len: u64,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<String>,

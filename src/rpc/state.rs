@@ -4,17 +4,26 @@ use web3::BatchTransport;
 
 use chainx_primitives::Hash;
 
-use crate::error::Error;
-use crate::transport::ChainXTransport;
+use crate::transport::{BoxFuture, ChainXTransport};
 use crate::types::{DecodeWrapper, EncodeWrapper};
 use crate::util;
 
-impl<T: BatchTransport> ChainXTransport<T> {
-    pub fn get_storage(
+pub trait StateRpc {
+    fn get_storage(
         &self,
         key: EncodeWrapper,
         hash: Option<Hash>,
-    ) -> impl Future<Item = Option<DecodeWrapper>, Error = Error> {
+    ) -> BoxFuture<Option<DecodeWrapper>>;
+
+    fn get_runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+}
+
+impl<T: BatchTransport + 'static> StateRpc for ChainXTransport<T> {
+    fn get_storage(
+        &self,
+        key: EncodeWrapper,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Option<DecodeWrapper>> {
         self.execute(
             "state_getStorage",
             vec![util::serialize(key), util::serialize(hash)],
@@ -22,10 +31,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         .and_then(util::deserialize)
     }
 
-    pub fn get_runtime_version(
-        &self,
-        hash: Option<Hash>,
-    ) -> impl Future<Item = Value, Error = Error> {
+    fn get_runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("state_getRuntimeVersion", vec![util::serialize(hash)])
     }
 }

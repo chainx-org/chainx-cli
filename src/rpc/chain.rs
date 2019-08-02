@@ -4,26 +4,35 @@ use web3::BatchTransport;
 
 use chainx_primitives::Hash;
 
-use crate::error::Error;
-use crate::transport::ChainXTransport;
+use crate::transport::{BoxFuture, ChainXTransport};
 use crate::util;
 
-impl<T: BatchTransport> ChainXTransport<T> {
-    pub fn header(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+pub trait ChainRpc {
+    fn header(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn finalized_head(&self) -> BoxFuture<Hash>;
+
+    fn block_hash(&self, number: Option<u64>) -> BoxFuture<Hash>;
+
+    fn block(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+}
+
+impl<T: BatchTransport + 'static> ChainRpc for ChainXTransport<T> {
+    fn header(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chain_getHeader", vec![util::serialize(hash)])
     }
 
-    pub fn finalized_head(&self) -> impl Future<Item = Hash, Error = Error> {
+    fn finalized_head(&self) -> BoxFuture<Hash> {
         self.execute("chain_getFinalizedHead", vec![])
             .and_then(util::deserialize)
     }
 
-    pub fn block_hash(&self, number: Option<u64>) -> impl Future<Item = Hash, Error = Error> {
+    fn block_hash(&self, number: Option<u64>) -> BoxFuture<Hash> {
         self.execute("chain_getBlockHash", vec![util::serialize(number)])
             .and_then(util::deserialize)
     }
 
-    pub fn block(&self, hash: Option<Hash>) -> impl Future<Item = Value, Error = Error> {
+    fn block(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chain_getBlock", vec![util::serialize(hash)])
     }
 }

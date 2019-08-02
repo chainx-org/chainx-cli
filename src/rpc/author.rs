@@ -3,12 +3,15 @@ use web3::BatchTransport;
 
 use chainx_primitives::Hash;
 
-use crate::error::Error;
-use crate::transport::ChainXTransport;
+use crate::transport::{BoxFuture, ChainXTransport};
 use crate::util;
 
-impl<T: BatchTransport> ChainXTransport<T> {
-    pub fn submit_extrinsic(&self, extrinsic: &str) -> impl Future<Item = Hash, Error = Error> {
+pub trait AuthorRpc {
+    fn submit_extrinsic(&self, extrinsic: &str) -> BoxFuture<Hash>;
+}
+
+impl<T: BatchTransport + 'static> AuthorRpc for ChainXTransport<T> {
+    fn submit_extrinsic(&self, extrinsic: &str) -> BoxFuture<Hash> {
         self.execute("author_submitExtrinsic", vec![util::serialize(extrinsic)])
             .and_then(util::deserialize)
     }
