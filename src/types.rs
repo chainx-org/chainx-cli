@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use substrate_primitives::crypto::Pair as TraitPair;
-use substrate_primitives::ed25519::Pair;
+pub type Hash = substrate_primitives::H256;
 
-use chainx_primitives::AccountId;
+#[derive(Clone, Serialize, Deserialize)]
+pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum Chain {
@@ -12,31 +15,36 @@ pub enum Chain {
     Ethereum,
 }
 
-pub type TradingPairIndex = u32;
+impl std::str::FromStr for Chain {
+    type Err = &'static str;
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Debug)]
-pub struct RawSeed(String);
-
-impl RawSeed {
-    pub fn new<S: Into<String>>(seed: S) -> Self {
-        Self(seed.into())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ChainX" | "PCX" => Ok(Chain::Bitcoin),
+            "Bitcoin" | "BTC" => Ok(Chain::Bitcoin),
+            "Ethereum" | "ETH" => Ok(Chain::Ethereum),
+            _ => Err("Unknown Chain Type"),
+        }
     }
+}
 
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
+#[derive(Debug)]
+pub enum HashOrHeight {
+    Height(u64),
+    Hash(Hash),
+}
 
-    // Unsafe, for test only
-    pub fn pair(&self) -> Pair {
-        let seed = self.as_str();
-        let mut s: [u8; 32] = [b' '; 32];
-        let len = ::std::cmp::min(32, seed.len());
-        s[..len].copy_from_slice(&seed.as_bytes()[..len]);
-        Pair::from_seed(s)
-    }
+impl std::str::FromStr for HashOrHeight {
+    type Err = &'static str;
 
-    pub fn account_id(&self) -> AccountId {
-        let pair = Self::pair(self);
-        AccountId::from_slice(pair.public().as_slice())
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            let hash = s.parse::<Hash>().map_err(|_| "Invalid Hash Length")?;
+            return Ok(HashOrHeight::Hash(hash));
+        }
+        match s.parse::<u64>() {
+            Ok(height) => Ok(HashOrHeight::Height(height)),
+            Err(_) => Err("The param is neither a 0x-prefix hex hash nor a number"),
+        }
     }
 }
