@@ -1,18 +1,21 @@
 use serde_json::Value;
 use web3::BatchTransport;
 
+use substrate_primitives::crypto::UncheckedInto;
+use substrate_primitives::ed25519;
+
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::{AccountId, Chain, Hash, TradingPairIndex};
+use crate::types::{Chain, Hash};
 use crate::util;
 
 pub trait ChainXRpc {
     fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value>;
 
-    fn next_renominate(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn next_renominate(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn asset(
         &self,
-        who: AccountId,
+        who: Hash,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
@@ -48,11 +51,11 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn psedu_nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn psedu_nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn intention(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn intention(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn intentions(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 
@@ -60,18 +63,17 @@ pub trait ChainXRpc {
 
     fn trading_pairs(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn quotations(&self, id: TradingPairIndex, piece: u32, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn quotations(&self, id: u32, piece: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn orders(
         &self,
-        who: AccountId,
+        who: Hash,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn addr_by_account(&self, who: AccountId, chain: Chain, hash: Option<Hash>)
-        -> BoxFuture<Value>;
+    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn trustee_session_info(
         &self,
@@ -80,17 +82,13 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn trustee_by_account(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn trustee_by_account(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn mock_btc_new_trustees(
-        &self,
-        candidates: Vec<AccountId>,
-        hash: Option<Hash>,
-    ) -> BoxFuture<Value>;
+    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
@@ -100,7 +98,8 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
     }
 
-    fn next_renominate(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn next_renominate(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getNextRenominateByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -109,11 +108,12 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
 
     fn asset(
         &self,
-        who: AccountId,
+        who: Hash,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
     ) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getAssetsByAccount",
             vec![
@@ -204,21 +204,24 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    fn psedu_nomination_records(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn psedu_nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getPseduNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
-    fn intention(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn intention(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getIntentionByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -237,7 +240,7 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         self.execute("chainx_getTradingPairs", vec![util::serialize(hash)])
     }
 
-    fn quotations(&self, id: TradingPairIndex, piece: u32, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn quotations(&self, id: u32, piece: u32, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getQuotations",
             vec![
@@ -250,11 +253,12 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
 
     fn orders(
         &self,
-        who: AccountId,
+        who: Hash,
         page_index: u32,
         page_size: u32,
         hash: Option<Hash>,
     ) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getOrders",
             vec![
@@ -266,12 +270,8 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn addr_by_account(
-        &self,
-        who: AccountId,
-        chain: Chain,
-        hash: Option<Hash>,
-    ) -> BoxFuture<Value> {
+    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getAddressByAccount",
             vec![
@@ -298,7 +298,8 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn trustee_by_account(&self, who: AccountId, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn trustee_by_account(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getTrusteeInfoByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -323,11 +324,11 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn mock_btc_new_trustees(
-        &self,
-        candidates: Vec<AccountId>,
-        hash: Option<Hash>,
-    ) -> BoxFuture<Value> {
+    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>, hash: Option<Hash>) -> BoxFuture<Value> {
+        let candidates: Vec<ed25519::Public> = candidates
+            .into_iter()
+            .map(UncheckedInto::unchecked_into)
+            .collect();
         self.execute(
             "chainx_getMockBitcoinNewTrustees",
             vec![util::serialize(candidates), util::serialize(hash)],

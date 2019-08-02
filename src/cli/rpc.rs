@@ -1,11 +1,9 @@
 use structopt::StructOpt;
 use web3::futures::Future;
 
-use substrate_primitives::crypto::UncheckedInto;
-
 use crate::error::Result;
 use crate::rpc::{AuthorRpc, ChainRpc, ChainXRpc, StateRpc, SystemRpc};
-use crate::types::{Chain, Hash, HeightOrHash};
+use crate::types::{Chain, Hash, HashOrHeight};
 
 #[derive(Debug, StructOpt)]
 pub enum RpcCommand {
@@ -28,13 +26,13 @@ pub enum RpcCommand {
         #[structopt(value_name = "NUM")]
         height: Option<u64>,
     },
-    //    /// Get header and body of a relay chain block.
-    //    #[structopt(name = "block")]
-    //    Block {
-    //        /// 0x-prefix hex block hash string or block height [default: hash or height of the latest block]
-    //        #[structopt(value_name = "HASH/HEIGHT")]
-    //        hash_or_height: Option<HeightOrHash>,
-    //    },
+    /// Get header and body of a relay chain block.
+    #[structopt(name = "block")]
+    Block {
+        /// 0x-prefix hex block hash string or block height [default: hash or height of the latest block]
+        #[structopt(value_name = "HEIGHT/HASH")]
+        hash_or_height: Option<HashOrHeight>,
+    },
 
     // System Rpc
     // ========================================================================
@@ -304,6 +302,7 @@ pub enum RpcCommand {
 
 impl RpcCommand {
     /// Dispatch rpc subcommand
+    #[rustfmt::skip]
     pub fn dispatch<Rpc>(self, rpc: Rpc) -> Result<()>
     where
         Rpc: AuthorRpc + ChainRpc + ChainXRpc + StateRpc + SystemRpc,
@@ -314,10 +313,11 @@ impl RpcCommand {
             Header { hash } => rpc.header(hash),
             FinalizedHeader => rpc.finalized_head(),
             BlockHash { height } => rpc.block_hash(height),
-            //            Block { hash_or_height } => {
-            //                rpc.block_by_number(hash_or_height);
-            //                rpc.block_by_hash(hash_or_height);
-            //            }
+            Block { hash_or_height } => match hash_or_height {
+                Some(HashOrHeight::Height(number)) => rpc.block_by_number(Some(number)),
+                Some(HashOrHeight::Hash(hash)) => rpc.block_by_hash(Some(hash)),
+                None => rpc.block_by_hash(None),
+            }
 
             // System Rpc
             SystemName => rpc.system_name(),
@@ -329,67 +329,33 @@ impl RpcCommand {
             SystemNetworkState => rpc.system_network_state(),
 
             // ChainX Rpc
-            NextRenominate { who, hash } => rpc.next_renominate(who.unchecked_into(), hash),
-            Asset {
-                who,
-                index,
-                size,
-                hash,
-            } => rpc.asset(who.unchecked_into(), index, size, hash),
+            NextRenominate { who, hash } => rpc.next_renominate(who, hash),
+            Asset { who, index, size, hash } => rpc.asset(who, index, size, hash),
             Assets { index, size, hash } => rpc.assets(index, size, hash),
-            VerifyAddr {
-                token,
-                addr,
-                memo,
-                hash,
-            } => rpc.verify_addr(token, addr, memo, hash),
+            VerifyAddr { token, addr, memo, hash} => rpc.verify_addr(token, addr, memo, hash),
             WithdrawLimit { token, hash } => rpc.withdraw_limit(token, hash),
             DepositLimit { token, hash } => rpc.deposit_limit(token, hash),
-            WithdrawList {
-                chain,
-                index,
-                size,
-                hash,
-            } => rpc.withdraw_list(chain, index, size, hash),
-            DepositList {
-                chain,
-                index,
-                size,
-                hash,
-            } => rpc.deposit_list(chain, index, size, hash),
-            NominationRecords { who, hash } => rpc.nomination_records(who.unchecked_into(), hash),
-            PseduNominationRecords { who, hash } => {
-                rpc.psedu_nomination_records(who.unchecked_into(), hash)
-            }
-            Intention { who, hash } => rpc.intention(who.unchecked_into(), hash),
+            WithdrawList { chain, index, size, hash} => rpc.withdraw_list(chain, index, size, hash),
+            DepositList { chain, index, size, hash } => rpc.deposit_list(chain, index, size, hash),
+            NominationRecords { who, hash } => rpc.nomination_records(who, hash),
+            PseduNominationRecords { who, hash } => rpc.psedu_nomination_records(who, hash),
+            Intention { who, hash } => rpc.intention(who, hash),
             Intentions { hash } => rpc.intentions(hash),
             PseduIntentions { hash } => rpc.psedu_intentions(hash),
             TradingPairs { hash } => rpc.trading_pairs(hash),
             Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
-            Orders {
-                who,
-                index,
-                size,
-                hash,
-            } => rpc.orders(who.unchecked_into(), index, size, hash),
-            AddrByAccount { who, chain, hash } => {
-                rpc.addr_by_account(who.unchecked_into(), chain, hash)
-            }
+            Orders { who, index, size, hash} => rpc.orders(who, index, size, hash),
+            AddrByAccount { who, chain, hash } => rpc.addr_by_account(who, chain, hash),
             TrusteeSession { chain, era, hash } => rpc.trustee_session_info(chain, era, hash),
-            TrusteeInfo { who, hash } => rpc.trustee_by_account(who.unchecked_into(), hash),
+            TrusteeInfo { who, hash } => rpc.trustee_by_account(who, hash),
             CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),
             WithdrawTx { chain, hash } => rpc.withdraw_tx(chain, hash),
-            MockBtcNewTrustees { candidates, hash } => rpc.mock_btc_new_trustees(
-                candidates
-                    .into_iter()
-                    .map(UncheckedInto::unchecked_into)
-                    .collect(),
-                hash,
-            ),
+            MockBtcNewTrustees { candidates, hash } => rpc.mock_btc_new_trustees(candidates, hash),
             ParticularAccounts { hash } => rpc.particular_accounts(hash),
         };
-        let result = fut.wait()?;
-        println!("{:?}", result);
+        let response = fut.wait()?;
+        let response = serde_json::to_string_pretty(&response)?;
+        println!("{}", response);
         Ok(())
     }
 }
