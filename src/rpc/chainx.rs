@@ -1,9 +1,6 @@
 use serde_json::Value;
 use web3::BatchTransport;
 
-use substrate_primitives::crypto::UncheckedInto;
-use substrate_primitives::ed25519;
-
 use crate::transport::{BoxFuture, ChainXTransport};
 use crate::types::{Chain, Hash};
 use crate::util;
@@ -99,7 +96,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn next_renominate(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getNextRenominateByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -113,7 +109,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         page_size: u32,
         hash: Option<Hash>,
     ) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getAssetsByAccount",
             vec![
@@ -205,7 +200,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
@@ -213,7 +207,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn psedu_nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getPseduNominationRecords",
             vec![util::serialize(who), util::serialize(hash)],
@@ -221,7 +214,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn intention(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getIntentionByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -258,7 +250,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         page_size: u32,
         hash: Option<Hash>,
     ) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getOrders",
             vec![
@@ -271,7 +262,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getAddressByAccount",
             vec![
@@ -299,7 +289,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn trustee_by_account(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        let who: ed25519::Public = who.unchecked_into();
         self.execute(
             "chainx_getTrusteeInfoByAccount",
             vec![util::serialize(who), util::serialize(hash)],
@@ -325,10 +314,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     }
 
     fn mock_btc_new_trustees(&self, candidates: Vec<Hash>, hash: Option<Hash>) -> BoxFuture<Value> {
-        let candidates: Vec<ed25519::Public> = candidates
-            .into_iter()
-            .map(UncheckedInto::unchecked_into)
-            .collect();
         self.execute(
             "chainx_getMockBitcoinNewTrustees",
             vec![util::serialize(candidates), util::serialize(hash)],

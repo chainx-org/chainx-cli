@@ -1,11 +1,11 @@
 [package]
 name = "chainx-cli"
 version = "1.0.4"
-authors = ["koushiro <koushiro.cqx@gmail.com>"]
+authors = ["ChainX <https://github.com/chainx-org>"]
 edition = "2018"
 
 [[bin]]
-name = "chainx-cli"
+name = "xcli"
 path = "src/bin/main.rs"
 
 [dependencies]
@@ -19,3 +19,9 @@ web3 = "0.8"
 [dependencies.substrate-primitives]
 git = "https://github.com/paritytech/substrate"
 tag = "v1.0.0"
+
+[dependencies.blake2-rfc]
+version = "0.2"
+
+[dependencies.base58]
+version = "0.1"
