@@ -17,18 +17,24 @@ pub trait SystemRpc {
 
 impl<T: BatchTransport + 'static> SystemRpc for ChainXTransport<T> {
     fn system_name(&self) -> BoxFuture<String> {
-        self.execute("system_name", vec![])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("system_name", vec![])
+                .and_then(util::deserialize),
+        )
     }
 
     fn system_version(&self) -> BoxFuture<String> {
-        self.execute("system_version", vec![])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("system_version", vec![])
+                .and_then(util::deserialize),
+        )
     }
 
     fn system_chain(&self) -> BoxFuture<String> {
-        self.execute("system_chain", vec![])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("system_chain", vec![])
+                .and_then(util::deserialize),
+        )
     }
 
     fn system_properties(&self) -> BoxFuture<Value> {

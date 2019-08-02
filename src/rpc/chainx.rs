@@ -113,11 +113,13 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         who: AccountId,
         hash: Option<Hash>,
     ) -> BoxFuture<Option<BlockNumber>> {
-        self.execute(
-            "chainx_getNextRenominateByAccount",
-            vec![util::serialize(who), util::serialize(hash)],
+        Box::new(
+            self.execute(
+                "chainx_getNextRenominateByAccount",
+                vec![util::serialize(who), util::serialize(hash)],
+            )
+            .and_then(util::deserialize),
         )
-        .and_then(util::deserialize)
     }
 
     fn assets_by_account(
@@ -156,16 +158,18 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         memo: String,
         hash: Option<Hash>,
     ) -> BoxFuture<Option<bool>> {
-        self.execute(
-            "chainx_verifyAddressValidity",
-            vec![
-                util::serialize(token),
-                util::serialize(addr),
-                util::serialize(memo),
-                util::serialize(hash),
-            ],
+        Box::new(
+            self.execute(
+                "chainx_verifyAddressValidity",
+                vec![
+                    util::serialize(token),
+                    util::serialize(addr),
+                    util::serialize(memo),
+                    util::serialize(hash),
+                ],
+            )
+            .and_then(util::deserialize),
         )
-        .and_then(util::deserialize)
     }
 
     fn withdraw_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value> {
@@ -286,15 +290,17 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         chain: Chain,
         hash: Option<Hash>,
     ) -> BoxFuture<Option<Vec<String>>> {
-        self.execute(
-            "chainx_getAddressByAccount",
-            vec![
-                util::serialize(who),
-                util::serialize(chain),
-                util::serialize(hash),
-            ],
+        Box::new(
+            self.execute(
+                "chainx_getAddressByAccount",
+                vec![
+                    util::serialize(who),
+                    util::serialize(chain),
+                    util::serialize(hash),
+                ],
+            )
+            .and_then(util::deserialize),
         )
-        .and_then(util::deserialize)
     }
 
     fn trustee_session_info(

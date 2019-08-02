@@ -12,7 +12,9 @@ pub trait AuthorRpc {
 
 impl<T: BatchTransport + 'static> AuthorRpc for ChainXTransport<T> {
     fn submit_extrinsic(&self, extrinsic: &str) -> BoxFuture<Hash> {
-        self.execute("author_submitExtrinsic", vec![util::serialize(extrinsic)])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("author_submitExtrinsic", vec![util::serialize(extrinsic)])
+                .and_then(util::deserialize),
+        )
     }
 }

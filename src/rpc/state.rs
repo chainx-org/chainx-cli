@@ -24,11 +24,13 @@ impl<T: BatchTransport + 'static> StateRpc for ChainXTransport<T> {
         key: EncodeWrapper,
         hash: Option<Hash>,
     ) -> BoxFuture<Option<DecodeWrapper>> {
-        self.execute(
-            "state_getStorage",
-            vec![util::serialize(key), util::serialize(hash)],
+        Box::new(
+            self.execute(
+                "state_getStorage",
+                vec![util::serialize(key), util::serialize(hash)],
+            )
+            .and_then(util::deserialize),
         )
-        .and_then(util::deserialize)
     }
 
     fn get_runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value> {

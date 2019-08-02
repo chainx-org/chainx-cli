@@ -23,13 +23,17 @@ impl<T: BatchTransport + 'static> ChainRpc for ChainXTransport<T> {
     }
 
     fn finalized_head(&self) -> BoxFuture<Hash> {
-        self.execute("chain_getFinalizedHead", vec![])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("chain_getFinalizedHead", vec![])
+                .and_then(util::deserialize),
+        )
     }
 
     fn block_hash(&self, number: Option<u64>) -> BoxFuture<Hash> {
-        self.execute("chain_getBlockHash", vec![util::serialize(number)])
-            .and_then(util::deserialize)
+        Box::new(
+            self.execute("chain_getBlockHash", vec![util::serialize(number)])
+                .and_then(util::deserialize),
+        )
     }
 
     fn block(&self, hash: Option<Hash>) -> BoxFuture<Value> {
