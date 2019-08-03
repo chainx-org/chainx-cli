@@ -60,6 +60,7 @@ pub enum RpcCommand {
 
     // ChainX Rpc
     // ========================================================================
+    /// Get the block height of the account's next switchable vote.
     #[structopt(name = "next_renominate")]
     NextRenominate {
         /// 0x-prefix hex hash string for account
@@ -69,6 +70,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the asset information of the account.
     #[structopt(name = "asset")]
     Asset {
         /// 0x-prefix hex hash string for account
@@ -84,6 +86,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the assets information.
     #[structopt(name = "assets")]
     Assets {
         /// Page index
@@ -96,6 +99,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Verify the correctness of the withdrawal address.
     #[structopt(name = "verify_addr")]
     VerifyAddr {
         /// Token name
@@ -111,6 +115,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the limitation related to withdrawals.
     #[structopt(name = "withdraw_limit")]
     WithdrawLimit {
         /// Token name
@@ -120,6 +125,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the limitation related to deposits.
     #[structopt(name = "deposit_limit")]
     DepositLimit {
         /// Token name
@@ -129,6 +135,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get all current withdrawal records.
     #[structopt(name = "withdraw_list")]
     WithdrawList {
         /// Chain name
@@ -144,6 +151,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get all current deposit records.
     #[structopt(name = "deposit_list")]
     DepositList {
         /// Chain name
@@ -159,6 +167,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the nomination records of the account.
     #[structopt(name = "nomination_records")]
     NominationRecords {
         /// 0x-prefix hex hash string for account
@@ -168,6 +177,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the psedu nomination records of the account.
     #[structopt(name = "psedu_nomination_records")]
     PseduNominationRecords {
         /// 0x-prefix hex hash string for account
@@ -177,6 +187,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the intention of the account.
     #[structopt(name = "intention")]
     Intention {
         /// 0x-prefix hex hash string for account
@@ -186,24 +197,28 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the all intentions.
     #[structopt(name = "intentions")]
     Intentions {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the all psedu intentions.
     #[structopt(name = "psedu_intentions")]
     PseduIntentions {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the trading pairs list.
     #[structopt(name = "trading_pairs")]
     TradingPairs {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the trading quotations list.
     #[structopt(name = "quotations")]
     Quotations {
         /// Trading pair index
@@ -215,6 +230,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the pending orders list of the account.
     #[structopt(name = "orders")]
     Orders {
         /// 0x-prefix hex hash string for account
@@ -230,6 +246,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the binding BTC address of the account.
     #[structopt(name = "addr_by_account")]
     AddrByAccount {
         /// 0x-prefix hex hash string for account
@@ -242,6 +259,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the current trustee information of the chain.
     #[structopt(name = "trustee_session")]
     TrusteeSession {
         /// Chain name
@@ -254,6 +272,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the trustee information of the account.
     #[structopt(name = "trustee_info")]
     TrusteeInfo {
         /// 0x-prefix hex hash string for account
@@ -263,6 +282,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the fee according to the call and transaction length.
     #[structopt(name = "call_fee")]
     CallFee {
         /// The parameters of Call
@@ -274,6 +294,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the withdrawal transactions of the chain.
     #[structopt(name = "withdraw_tx")]
     WithdrawTx {
         /// Chain name
@@ -283,6 +304,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Simulate the generation of next era BTC trustee address.
     #[structopt(name = "mock_btc_new_trustees")]
     MockBtcNewTrustees {
         /// 0x-prefix hex hash string for new trustee accounts
@@ -292,6 +314,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the particular account addresses (council, team, trustees).
     #[structopt(name = "particular_accounts")]
     ParticularAccounts {
         /// 0x-prefix hex block hash string [default: latest block hash]

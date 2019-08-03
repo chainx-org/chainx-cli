@@ -1,11 +1,11 @@
 [package]
 name = "chainx-cli"
 version = "1.0.4"
-authors = ["koushiro <koushiro.cqx@gmail.com>"]
+authors = ["ChainX <https://github.com/chainx-org>"]
 edition = "2018"
 
 [[bin]]
-name = "chainx-cli"
+name = "xcli"
 path = "src/bin/main.rs"
 
 [dependencies]

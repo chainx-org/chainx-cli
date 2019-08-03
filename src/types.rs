@@ -1,6 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-pub type Hash = substrate_primitives::H256;
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub struct Hash(substrate_primitives::H256);
+
+impl std::str::FromStr for Hash {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            let hash = s[2..].parse::<substrate_primitives::H256>().map_err(|_| "Invalid Hash Length")?;
+            Ok(Hash(hash))
+        } else {
+            Err("Invalid Hash: 0x-prefix is missing")
+        }
+    }
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
