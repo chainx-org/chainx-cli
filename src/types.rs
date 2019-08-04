@@ -8,7 +8,9 @@ impl std::str::FromStr for Hash {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("0x") || s.starts_with("0X") {
-            let hash = s[2..].parse::<primitive_types::H256>().map_err(|_| "Invalid Hash Length")?;
+            let hash = s[2..]
+                .parse::<primitive_types::H256>()
+                .map_err(|_| "Invalid Hash Length")?;
             Ok(Hash(hash))
         } else {
             Err("Invalid Hash: 0x-prefix is missing")

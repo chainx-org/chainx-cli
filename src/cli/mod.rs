@@ -1,6 +1,9 @@
 mod rpc;
 
-use structopt::{clap::AppSettings, StructOpt};
+use std::io;
+
+use structopt::clap::{AppSettings, Shell};
+use structopt::StructOpt;
 use web3::BatchTransport;
 
 use crate::error::Result;
@@ -19,7 +22,15 @@ pub fn init() -> Command {
 )]
 #[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
 pub enum Command {
-    /// Rpc subcommand
+    /// Generates completion scripts for your shell.
+    #[structopt(name = "completions")]
+    Completions {
+        /// The shell to generate the script for
+        #[structopt(value_name = "SHELL")]
+        shell: Shell,
+    },
+
+    /// Rpc subcommand.
     #[structopt(name = "rpc")]
     #[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
     Rpc(rpc::RpcCommand),
@@ -31,6 +42,9 @@ impl Command {
         T: BatchTransport + 'static,
     {
         match self {
+            Command::Completions { shell } => {
+                Command::clap().gen_completions_to("xli", shell, &mut io::stdout());
+            }
             Command::Rpc(rpc) => rpc.dispatch(transport)?,
         }
         Ok(())
