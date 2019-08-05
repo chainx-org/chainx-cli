@@ -16,12 +16,18 @@ pub fn init() -> Command {
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "chainx-cli",
+    name = "xli",
     author = "koushiro <koushiro.cqx@gmail.com>",
     about = "A ChainX command-line tool"
 )]
 #[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
-pub enum Command {
+pub struct Command {
+    #[structopt(subcommand)]
+    pub sub_cmd: SubCommand,
+}
+
+#[derive(Debug, StructOpt)]
+pub enum SubCommand {
     /// Generates completion scripts for your shell.
     #[structopt(name = "completions")]
     Completions {
@@ -36,16 +42,16 @@ pub enum Command {
     Rpc(rpc::RpcCommand),
 }
 
-impl Command {
+impl SubCommand {
     pub fn dispatch<T>(self, transport: ChainXTransport<T>) -> Result<()>
     where
         T: BatchTransport + 'static,
     {
         match self {
-            Command::Completions { shell } => {
-                Command::clap().gen_completions_to("xli", shell, &mut io::stdout());
+            SubCommand::Completions { shell } => {
+                SubCommand::clap().gen_completions_to("xli", shell, &mut io::stdout());
             }
-            Command::Rpc(rpc) => rpc.dispatch(transport)?,
+            SubCommand::Rpc(rpc) => rpc.dispatch(transport)?,
         }
         Ok(())
     }
