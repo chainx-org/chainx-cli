@@ -1,23 +1,25 @@
 use serde_json::Value;
-use web3::futures::Future;
 use web3::BatchTransport;
 
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::{DecodeWrapper, EncodeWrapper, Hash};
+use crate::types::Hash;
 use crate::util;
 
 pub trait StateRpc {
-    fn get_storage(
+    /*
+    fn storage(
         &self,
         key: EncodeWrapper,
         hash: Option<Hash>,
     ) -> BoxFuture<Option<DecodeWrapper>>;
+    */
 
-    fn get_runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
 
 impl<T: BatchTransport + 'static> StateRpc for ChainXTransport<T> {
-    fn get_storage(
+    /*
+    fn storage(
         &self,
         key: EncodeWrapper,
         hash: Option<Hash>,
@@ -30,8 +32,9 @@ impl<T: BatchTransport + 'static> StateRpc for ChainXTransport<T> {
             .and_then(util::deserialize),
         )
     }
+    */
 
-    fn get_runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn runtime_version(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("state_getRuntimeVersion", vec![util::serialize(hash)])
     }
 }

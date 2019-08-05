@@ -1,11 +1,11 @@
 [package]
 name = "chainx-cli"
-version = "1.0.4"
+version = "1.0.5"
 authors = ["ChainX <https://github.com/chainx-org>"]
 edition = "2018"
 
 [[bin]]
-name = "xcli"
+name = "xli"
 path = "src/bin/main.rs"
 
 [dependencies]
@@ -13,9 +13,9 @@ structopt = "0.2"
 failure = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-parity-codec = { version = "3.5", features = ["derive"] }
 web3 = "0.8"
 
-[dependencies.substrate-primitives]
-git = "https://github.com/paritytech/substrate"
-tag = "v1.0.0"
+primitive-types = { version = "0.5", features = ["serde", "rustc-hex"] }
+#[dependencies.substrate-primitives]
+#git = "https://github.com/paritytech/substrate"
+#tag = "v1.0.0"

@@ -85,7 +85,7 @@ pub trait ChainXRpc {
 
     fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>) -> BoxFuture<Value>;
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
@@ -313,10 +313,10 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>, hash: Option<Hash>) -> BoxFuture<Value> {
+    fn mock_btc_new_trustees(&self, candidates: Vec<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getMockBitcoinNewTrustees",
-            vec![util::serialize(candidates), util::serialize(hash)],
+            vec![util::serialize(candidates)],
         )
     }
 
