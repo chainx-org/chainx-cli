@@ -38,7 +38,7 @@ SUBCOMMANDS:
     addr_verification           Verify the correctness of the withdrawal address.
     asset                       Get the asset information of the account.
     assets                      Get the assets information.
-    block                       Get the runtime version.
+    block                       Get header and body of a relay chain block.
     block_hash                  Get hash of the n-th block in the canon chain.
     call_fee                    Get the fee according to the call and transaction length.
     deposit_limit               Get the limitation related to deposits.
@@ -55,6 +55,7 @@ SUBCOMMANDS:
     psedu_intentions            Get the mining list.
     psedu_nomination_records    Get the voting information of the account.
     quotations                  Get the trading quotations list.
+    runtime_version             Get the runtime version.
     system_chain                Get the chain's type. Given as a string identifier.
     system_health               Return health status of the node.
     system_name                 Get the node's implementation name. Plain old string.

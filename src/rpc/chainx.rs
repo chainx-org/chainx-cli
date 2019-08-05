@@ -20,6 +20,8 @@ pub trait ChainXRpc {
 
     fn assets(&self, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
+    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
+
     fn verify_addr(
         &self,
         token: String,
@@ -70,8 +72,6 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
-
     fn trustee_session_info(
         &self,
         chain: Chain,
@@ -81,11 +81,11 @@ pub trait ChainXRpc {
 
     fn trustee_by_account(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
-
     fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn mock_btc_new_trustees(&self, candidates: Vec<Hash>) -> BoxFuture<Value>;
+
+    fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
@@ -126,6 +126,17 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
             vec![
                 util::serialize(page_index),
                 util::serialize(page_size),
+                util::serialize(hash),
+            ],
+        )
+    }
+
+    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getAddressByAccount",
+            vec![
+                util::serialize(who),
+                util::serialize(chain),
                 util::serialize(hash),
             ],
         )
@@ -261,17 +272,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute(
-            "chainx_getAddressByAccount",
-            vec![
-                util::serialize(who),
-                util::serialize(chain),
-                util::serialize(hash),
-            ],
-        )
-    }
-
     fn trustee_session_info(
         &self,
         chain: Chain,
@@ -295,17 +295,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute(
-            "chainx_getFeeByCallAndLength",
-            vec![
-                util::serialize(call_params),
-                util::serialize(tx_len),
-                util::serialize(hash),
-            ],
-        )
-    }
-
     fn withdraw_tx(&self, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getWithdrawTx",
@@ -317,6 +306,17 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         self.execute(
             "chainx_getMockBitcoinNewTrustees",
             vec![util::serialize(candidates)],
+        )
+    }
+
+    fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getFeeByCallAndLength",
+            vec![
+                util::serialize(call_params),
+                util::serialize(tx_len),
+                util::serialize(hash),
+            ],
         )
     }
 

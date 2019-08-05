@@ -37,7 +37,7 @@ pub enum RpcCommand {
     // State Rpc
     // ========================================================================
     /// Get the runtime version.
-    #[structopt(name = "block")]
+    #[structopt(name = "runtime_version")]
     RuntimeVersion {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
