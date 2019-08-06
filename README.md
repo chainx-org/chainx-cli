@@ -40,7 +40,6 @@ SUBCOMMANDS:
     assets                      Get the assets information.
     block                       Get header and body of a relay chain block.
     block_hash                  Get hash of the n-th block in the canon chain.
-    call_fee                    Get the fee according to the call and transaction length.
     deposit_limit               Get the limitation related to deposits.
     deposit_list                Get all current deposit records.
     header                      Get header of a relay chain block.
@@ -71,3 +70,8 @@ SUBCOMMANDS:
     withdraw_tx                 Get the withdrawal transactions of the chain.
 ```
 
+See the [wiki](https://github.com/chainx-org/ChainX/wiki/RPC) for RPC details.
+
+# LICENSE
+
+[GPL v3](./LICENSE)
