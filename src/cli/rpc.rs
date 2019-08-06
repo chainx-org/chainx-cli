@@ -310,6 +310,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "ACCOUNTS")]
         candidates: Vec<Hash>,
     },
+    /*
     /// Get the fee according to the call and transaction length.
     #[structopt(name = "call_fee")]
     CallFee {
@@ -322,6 +323,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    */
     /// Get the particular account addresses (council, team, trustees).
     #[structopt(name = "particular_accounts")]
     ParticularAccounts {
@@ -384,7 +386,7 @@ impl RpcCommand {
             TrusteeInfo { who, hash } => rpc.trustee_by_account(who, hash),
             WithdrawTx { chain, hash } => rpc.withdraw_tx(chain, hash),
             MockBtcNewTrustees { candidates } => rpc.mock_btc_new_trustees(candidates),
-            CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),
+            /*CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),*/
             ParticularAccounts { hash } => rpc.particular_accounts(hash),
         };
         let response = fut.wait()?;
