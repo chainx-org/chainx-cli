@@ -4,10 +4,8 @@ use std::io;
 
 use structopt::clap::{AppSettings, Shell};
 use structopt::StructOpt;
-use web3::BatchTransport;
 
 use crate::error::Result;
-use crate::transport::ChainXTransport;
 
 /// Initialize command from the env args
 pub fn init() -> Command {
@@ -17,7 +15,7 @@ pub fn init() -> Command {
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "xli",
-    author = "koushiro <koushiro.cqx@gmail.com>",
+    author = "ChainX <chainx.org>",
     about = "A ChainX command-line tool"
 )]
 #[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
@@ -43,15 +41,12 @@ pub enum SubCommand {
 }
 
 impl SubCommand {
-    pub fn dispatch<T>(self, transport: ChainXTransport<T>) -> Result<()>
-    where
-        T: BatchTransport + 'static,
-    {
+    pub fn dispatch(self, rpc_url: &str) -> Result<()> {
         match self {
             SubCommand::Completions { shell } => {
                 SubCommand::clap().gen_completions_to("xli", shell, &mut io::stdout());
             }
-            SubCommand::Rpc(rpc) => rpc.dispatch(transport)?,
+            SubCommand::Rpc(rpc) => rpc.dispatch(rpc_url)?,
         }
         Ok(())
     }

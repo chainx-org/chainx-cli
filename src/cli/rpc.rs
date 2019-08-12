@@ -2,7 +2,8 @@ use structopt::StructOpt;
 use web3::futures::Future;
 
 use crate::error::Result;
-use crate::rpc::{AuthorRpc, ChainRpc, ChainXRpc, StateRpc, SystemRpc};
+use crate::rpc::Rpc;
+use crate::transport::{http_connect, ws_connect};
 use crate::types::{Chain, Hash, HashOrHeight};
 
 #[derive(Debug, StructOpt)]
@@ -335,11 +336,20 @@ pub enum RpcCommand {
 
 impl RpcCommand {
     /// Dispatch rpc subcommand
+    pub fn dispatch(self, url: &str) -> Result<()> {
+        if url.starts_with("ws://") || url.starts_with("wss://") {
+            let (_handle, chainx) = ws_connect(url)?;
+            self.dispatch_impl(chainx)?;
+        } else {
+            let (_handle, chainx) = http_connect(url)?;
+            self.dispatch_impl(chainx)?;
+        }
+        Ok(())
+    }
+
+    /// Dispatch rpc subcommand implement
     #[rustfmt::skip]
-    pub fn dispatch<Rpc>(self, rpc: Rpc) -> Result<()>
-    where
-        Rpc: AuthorRpc + ChainRpc + ChainXRpc + StateRpc + SystemRpc,
-    {
+    fn dispatch_impl<R: Rpc>(self, rpc: R) -> Result<()> {
         use RpcCommand::*;
         let fut = match self {
             // Chain Rpc
