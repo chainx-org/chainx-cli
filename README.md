@@ -1,6 +1,6 @@
 # chainx-cli
 
-A ChainX command-line tool.
+A command-line tool of ChainX.
 
 ## Build
 
