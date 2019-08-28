@@ -129,12 +129,12 @@ pub enum RpcCommand {
         ///  Withdrawal address that needs to be verified
         #[structopt(value_name = "ADDR")]
         addr: String,
-        /// Memo
-        #[structopt(value_name = "MEMO")]
-        memo: String,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: String,
+        /// Memo
+        #[structopt(value_name = "MEMO", default_value = "")]
+        memo: String,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -197,6 +197,9 @@ pub enum RpcCommand {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
+        /// For getting the nominate records version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -207,6 +210,9 @@ pub enum RpcCommand {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
+        /// For getting the voting information version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -224,6 +230,9 @@ pub enum RpcCommand {
     /// Get the all node information.
     #[structopt(name = "intentions")]
     Intentions {
+        /// For getting the all node information version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -231,6 +240,9 @@ pub enum RpcCommand {
     /// Get the mining list.
     #[structopt(name = "psedu_intentions")]
     PseduIntentions {
+        /// For getting the mining list version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -384,11 +396,11 @@ impl RpcCommand {
             DepositLimit { token, hash } => rpc.deposit_limit(token, hash),
             WithdrawList { chain, index, size, hash} => rpc.withdraw_list(chain, index, size, hash),
             DepositList { chain, index, size, hash } => rpc.deposit_list(chain, index, size, hash),
-            NominationRecords { who, hash } => rpc.nomination_records(who, hash),
-            PseduNominationRecords { who, hash } => rpc.psedu_nomination_records(who, hash),
+            NominationRecords { who, version, hash } => rpc.nomination_records(who, version, hash),
+            PseduNominationRecords { who, version, hash } => rpc.psedu_nomination_records(who, version, hash),
             Intention { addr, hash } => rpc.intention(addr, hash),
-            Intentions { hash } => rpc.intentions(hash),
-            PseduIntentions { hash } => rpc.psedu_intentions(hash),
+            Intentions { version, hash } => rpc.intentions(version, hash),
+            PseduIntentions { version, hash } => rpc.psedu_intentions(version, hash),
             TradingPairs { hash } => rpc.trading_pairs(hash),
             Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
             Orders { who, index, size, hash} => rpc.orders(who, index, size, hash),

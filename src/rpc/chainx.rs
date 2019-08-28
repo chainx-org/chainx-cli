@@ -50,15 +50,20 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
-    fn nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn nomination_records(&self, who: Hash, version: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn psedu_nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn psedu_nomination_records(
+        &self,
+        who: Hash,
+        version: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value>;
 
     fn intention(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn intentions(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn intentions(&self, version: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
-    fn psedu_intentions(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+    fn psedu_intentions(&self, version: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn trading_pairs(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 
@@ -85,7 +90,7 @@ pub trait ChainXRpc {
 
     fn mock_btc_new_trustees(&self, candidates: Vec<Hash>) -> BoxFuture<Value>;
 
-    fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
+    /*fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;*/
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
@@ -210,18 +215,37 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute(
-            "chainx_getNominationRecords",
-            vec![util::serialize(who), util::serialize(hash)],
-        )
+    fn nomination_records(&self, who: Hash, version: u32, hash: Option<Hash>) -> BoxFuture<Value> {
+        match version {
+            0 => self.execute(
+                "chainx_getNominationRecords",
+                vec![util::serialize(who), util::serialize(hash)],
+            ),
+            1 => self.execute(
+                "chainx_getNominationRecordsV1",
+                vec![util::serialize(who), util::serialize(hash)],
+            ),
+            _ => unreachable!("Unknown version"),
+        }
     }
 
-    fn psedu_nomination_records(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute(
-            "chainx_getPseduNominationRecords",
-            vec![util::serialize(who), util::serialize(hash)],
-        )
+    fn psedu_nomination_records(
+        &self,
+        who: Hash,
+        version: u32,
+        hash: Option<Hash>,
+    ) -> BoxFuture<Value> {
+        match version {
+            0 => self.execute(
+                "chainx_getPseduNominationRecords",
+                vec![util::serialize(who), util::serialize(hash)],
+            ),
+            1 => self.execute(
+                "chainx_getPseduNominationRecordsV1",
+                vec![util::serialize(who), util::serialize(hash)],
+            ),
+            _ => unreachable!("Unknown version"),
+        }
     }
 
     fn intention(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
@@ -231,12 +255,20 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    fn intentions(&self, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute("chainx_getIntentions", vec![util::serialize(hash)])
+    fn intentions(&self, version: u32, hash: Option<Hash>) -> BoxFuture<Value> {
+        match version {
+            0 => self.execute("chainx_getIntentions", vec![util::serialize(hash)]),
+            1 => self.execute("chainx_getIntentionsV1", vec![util::serialize(hash)]),
+            _ => unreachable!("Unknown version"),
+        }
     }
 
-    fn psedu_intentions(&self, hash: Option<Hash>) -> BoxFuture<Value> {
-        self.execute("chainx_getPseduIntentions", vec![util::serialize(hash)])
+    fn psedu_intentions(&self, version: u32, hash: Option<Hash>) -> BoxFuture<Value> {
+        match version {
+            0 => self.execute("chainx_getPseduIntentions", vec![util::serialize(hash)]),
+            1 => self.execute("chainx_getPseduIntentionsV1", vec![util::serialize(hash)]),
+            _ => unreachable!("Unknown version"),
+        }
     }
 
     fn trading_pairs(&self, hash: Option<Hash>) -> BoxFuture<Value> {
@@ -309,6 +341,7 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
+    /*
     fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getFeeByCallAndLength",
@@ -319,6 +352,7 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
             ],
         )
     }
+    */
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_particularAccounts", vec![util::serialize(hash)])
