@@ -40,6 +40,9 @@ SUBCOMMANDS:
     assets                      Get the assets information.
     block                       Get header and body of a relay chain block.
     block_hash                  Get hash of the n-th block in the canon chain.
+    call_fee                    Get the fee according to the call and transaction length.
+    call_fee_map                Get the fee according to the call and transaction length.
+    cross_mining_dividend       Get the cross mining dividend of the account.
     deposit_limit               Get the limitation related to deposits.
     deposit_list                Get all current deposit records.
     header                      Get header of a relay chain block.
@@ -55,6 +58,7 @@ SUBCOMMANDS:
     psedu_nomination_records    Get the voting information of the account.
     quotations                  Get the trading quotations list.
     runtime_version             Get the runtime version.
+    staking_dividend            Get the staking dividend of the account.
     system_chain                Get the chain's type. Given as a string identifier.
     system_health               Return health status of the node.
     system_name                 Get the node's implementation name. Plain old string.
