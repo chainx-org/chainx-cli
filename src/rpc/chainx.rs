@@ -50,6 +50,10 @@ pub trait ChainXRpc {
         hash: Option<Hash>,
     ) -> BoxFuture<Value>;
 
+    fn staking_dividend(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn cross_mining_dividend(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
+
     fn nomination_records(&self, who: Hash, version: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn psedu_nomination_records(
@@ -90,7 +94,9 @@ pub trait ChainXRpc {
 
     fn mock_btc_new_trustees(&self, candidates: Vec<Hash>) -> BoxFuture<Value>;
 
-    /*fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;*/
+    fn call_fee(&self, call: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value>;
+
+    fn call_fee_map(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value>;
 }
@@ -212,6 +218,20 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
                 util::serialize(page_size),
                 util::serialize(hash),
             ],
+        )
+    }
+
+    fn staking_dividend(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getStakingDividendByAccount",
+            vec![util::serialize(who), util::serialize(hash)],
+        )
+    }
+
+    fn cross_mining_dividend(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute(
+            "chainx_getCrossMiningDividendByAccount",
+            vec![util::serialize(who), util::serialize(hash)],
         )
     }
 
@@ -341,7 +361,6 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
         )
     }
 
-    /*
     fn call_fee(&self, call_params: String, tx_len: u64, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute(
             "chainx_getFeeByCallAndLength",
@@ -352,7 +371,10 @@ impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
             ],
         )
     }
-    */
+
+    fn call_fee_map(&self, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute("chainx_getFeeWeightMap", vec![util::serialize(hash)])
+    }
 
     fn particular_accounts(&self, hash: Option<Hash>) -> BoxFuture<Value> {
         self.execute("chainx_particularAccounts", vec![util::serialize(hash)])
