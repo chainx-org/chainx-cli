@@ -129,12 +129,12 @@ pub enum RpcCommand {
         ///  Withdrawal address that needs to be verified
         #[structopt(value_name = "ADDR")]
         addr: String,
-        /// Memo
-        #[structopt(value_name = "MEMO")]
-        memo: String,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: String,
+        /// Memo
+        #[structopt(value_name = "MEMO", default_value = "")]
+        memo: String,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -191,12 +191,35 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
+    /// Get the staking dividend of the account.
+    #[structopt(name = "staking_dividend")]
+    StakingDividend {
+        /// 0x-prefix hex hash string for account
+        #[structopt(value_name = "ACCOUNT")]
+        who: Hash,
+        /// 0x-prefix hex block hash string [default: latest block hash]
+        #[structopt(value_name = "HASH")]
+        hash: Option<Hash>,
+    },
+    /// Get the cross mining dividend of the account.
+    #[structopt(name = "cross_mining_dividend")]
+    CrossMiningDividend {
+        /// 0x-prefix hex hash string for account
+        #[structopt(value_name = "ACCOUNT")]
+        who: Hash,
+        /// 0x-prefix hex block hash string [default: latest block hash]
+        #[structopt(value_name = "HASH")]
+        hash: Option<Hash>,
+    },
     /// Get the nominate records of the account.
     #[structopt(name = "nomination_records")]
     NominationRecords {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
+        /// For getting the nominate records version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -207,6 +230,9 @@ pub enum RpcCommand {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
+        /// For getting the voting information version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -224,6 +250,9 @@ pub enum RpcCommand {
     /// Get the all node information.
     #[structopt(name = "intentions")]
     Intentions {
+        /// For getting the all node information version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -231,6 +260,9 @@ pub enum RpcCommand {
     /// Get the mining list.
     #[structopt(name = "psedu_intentions")]
     PseduIntentions {
+        /// For getting the mining list version1 of the account.
+        #[structopt(value_name = "VERSION", default_value = "0")]
+        version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -311,7 +343,6 @@ pub enum RpcCommand {
         #[structopt(value_name = "ACCOUNTS")]
         candidates: Vec<Hash>,
     },
-    /*
     /// Get the fee according to the call and transaction length.
     #[structopt(name = "call_fee")]
     CallFee {
@@ -324,7 +355,13 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
-    */
+    /// Get the fee weight map, transaction base fee and transaction byte fee.
+    #[structopt(name = "call_fee_map")]
+    CallFeeMap {
+        /// 0x-prefix hex block hash string [default: latest block hash]
+        #[structopt(value_name = "HASH")]
+        hash: Option<Hash>,
+    },
     /// Get the particular account addresses (council, team, trustees).
     #[structopt(name = "particular_accounts")]
     ParticularAccounts {
@@ -384,11 +421,13 @@ impl RpcCommand {
             DepositLimit { token, hash } => rpc.deposit_limit(token, hash),
             WithdrawList { chain, index, size, hash} => rpc.withdraw_list(chain, index, size, hash),
             DepositList { chain, index, size, hash } => rpc.deposit_list(chain, index, size, hash),
-            NominationRecords { who, hash } => rpc.nomination_records(who, hash),
-            PseduNominationRecords { who, hash } => rpc.psedu_nomination_records(who, hash),
+            StakingDividend { who, hash } => rpc.staking_dividend(who, hash),
+            CrossMiningDividend { who, hash } => rpc.cross_mining_dividend(who, hash),
+            NominationRecords { who, version, hash } => rpc.nomination_records(who, version, hash),
+            PseduNominationRecords { who, version, hash } => rpc.psedu_nomination_records(who, version, hash),
             Intention { addr, hash } => rpc.intention(addr, hash),
-            Intentions { hash } => rpc.intentions(hash),
-            PseduIntentions { hash } => rpc.psedu_intentions(hash),
+            Intentions { version, hash } => rpc.intentions(version, hash),
+            PseduIntentions { version, hash } => rpc.psedu_intentions(version, hash),
             TradingPairs { hash } => rpc.trading_pairs(hash),
             Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
             Orders { who, index, size, hash} => rpc.orders(who, index, size, hash),
@@ -396,7 +435,8 @@ impl RpcCommand {
             TrusteeInfo { who, hash } => rpc.trustee_by_account(who, hash),
             WithdrawTx { chain, hash } => rpc.withdraw_tx(chain, hash),
             MockBtcNewTrustees { candidates } => rpc.mock_btc_new_trustees(candidates),
-            /*CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),*/
+            CallFee { call, tx_len, hash } => rpc.call_fee(call, tx_len, hash),
+            CallFeeMap { hash } => rpc.call_fee_map(hash),
             ParticularAccounts { hash } => rpc.particular_accounts(hash),
         };
         let response = fut.wait()?;
