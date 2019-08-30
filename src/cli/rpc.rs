@@ -355,7 +355,7 @@ pub enum RpcCommand {
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
-    /// Get the fee according to the call and transaction length.
+    /// Get the fee weight map, transaction base fee and transaction byte fee.
     #[structopt(name = "call_fee_map")]
     CallFeeMap {
         /// 0x-prefix hex block hash string [default: latest block hash]
