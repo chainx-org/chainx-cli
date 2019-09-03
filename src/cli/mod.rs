@@ -1,8 +1,6 @@
 mod rpc;
 
-use std::io;
-
-use structopt::clap::{AppSettings, Shell};
+use structopt::clap;
 use structopt::StructOpt;
 
 use crate::error::Result;
@@ -13,12 +11,8 @@ pub fn init() -> Command {
 }
 
 #[derive(Debug, StructOpt)]
-#[structopt(
-    name = "xli",
-    author = "ChainX <chainx.org>",
-    about = "A ChainX command-line tool"
-)]
-#[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
+#[structopt(name = "xli", author, about)]
+#[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
 pub struct Command {
     #[structopt(subcommand)]
     pub sub_cmd: SubCommand,
@@ -31,12 +25,12 @@ pub enum SubCommand {
     Completions {
         /// The shell to generate the script for
         #[structopt(value_name = "SHELL")]
-        shell: Shell,
+        shell: clap::Shell,
     },
 
     /// Rpc subcommand.
     #[structopt(name = "rpc")]
-    #[structopt(raw(setting = "AppSettings::DisableHelpSubcommand"))]
+    #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
 }
 
@@ -44,7 +38,7 @@ impl SubCommand {
     pub fn dispatch(self, rpc_url: &str) -> Result<()> {
         match self {
             SubCommand::Completions { shell } => {
-                SubCommand::clap().gen_completions_to("xli", shell, &mut io::stdout());
+                SubCommand::clap().gen_completions_to("xli", shell, &mut std::io::stdout());
             }
             SubCommand::Rpc(rpc) => rpc.dispatch(rpc_url)?,
         }

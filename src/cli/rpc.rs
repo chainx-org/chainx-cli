@@ -18,10 +18,10 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get hash of the last finalized block in the canon chain.
-    #[structopt(name = "header_finalized")]
+    #[structopt(name = "header-finalized")]
     FinalizedHeader,
     /// Get hash of the n-th block in the canon chain.
-    #[structopt(name = "block_hash")]
+    #[structopt(name = "block-hash")]
     BlockHash {
         /// Block height [default: latest block height]
         #[structopt(value_name = "NUM")]
@@ -38,7 +38,7 @@ pub enum RpcCommand {
     // State Rpc
     // ========================================================================
     /// Get the runtime version.
-    #[structopt(name = "runtime_version")]
+    #[structopt(name = "runtime-version")]
     RuntimeVersion {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
@@ -48,31 +48,38 @@ pub enum RpcCommand {
     // System Rpc
     // ========================================================================
     /// Get the node's implementation name. Plain old string.
-    #[structopt(name = "system_name")]
+    #[structopt(name = "system-name")]
     SystemName,
     /// Get the node implementation's version. Should be a semver string.
-    #[structopt(name = "system_version")]
+    #[structopt(name = "system-version")]
     SystemVersion,
     /// Get the chain's type. Given as a string identifier.
-    #[structopt(name = "system_chain")]
+    #[structopt(name = "system-chain")]
     SystemChain,
     /// Get a custom set of properties as a JSON object, defined in the chain spec.
-    #[structopt(name = "system_properties")]
+    #[structopt(name = "system-properties")]
     SystemProperties,
-    /// Return health status of the node.
-    #[structopt(name = "system_health")]
+    /// Get health status of the node.
+    #[structopt(name = "system-health")]
     SystemHealth,
-    /// Returns currently connected peers.
-    #[structopt(name = "system_peers")]
+    /// Get currently connected peers.
+    #[structopt(name = "system-peers")]
     SystemPeers,
-    /// Returns current state of the network.
-    #[structopt(name = "system_network_state")]
+    /// Get current state of the network.
+    #[structopt(name = "system-network_state")]
     SystemNetworkState,
 
     // ChainX Rpc
     // ========================================================================
+    /// Get all extrinsic events in a block.
+    #[structopt(name = "extrinsic-events")]
+    ExtrinsicEvents {
+        /// 0x-prefix hex block hash string [default: latest block hash]
+        #[structopt(value_name = "HASH")]
+        hash: Option<Hash>,
+    },
     /// Get the block height of the account's next switchable vote.
-    #[structopt(name = "next_renominate")]
+    #[structopt(name = "next-renominate")]
     NextRenominate {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -111,7 +118,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the binding BTC address of the account.
-    #[structopt(name = "addr_by_account")]
+    #[structopt(name = "addr-by-account")]
     AddrByAccount {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -124,7 +131,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Verify the correctness of the withdrawal address.
-    #[structopt(name = "addr_verification")]
+    #[structopt(name = "addr-verification")]
     AddrVerification {
         ///  Withdrawal address that needs to be verified
         #[structopt(value_name = "ADDR")]
@@ -140,7 +147,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the limitation related to withdrawals.
-    #[structopt(name = "withdraw_limit")]
+    #[structopt(name = "withdraw-limit")]
     WithdrawLimit {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
@@ -150,7 +157,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the limitation related to deposits.
-    #[structopt(name = "deposit_limit")]
+    #[structopt(name = "deposit-limit")]
     DepositLimit {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
@@ -160,7 +167,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get all current withdrawal records.
-    #[structopt(name = "withdraw_list")]
+    #[structopt(name = "withdraw-list")]
     WithdrawList {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
@@ -176,7 +183,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get all current deposit records.
-    #[structopt(name = "deposit_list")]
+    #[structopt(name = "deposit-list")]
     DepositList {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
@@ -192,7 +199,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the staking dividend of the account.
-    #[structopt(name = "staking_dividend")]
+    #[structopt(name = "staking-dividend")]
     StakingDividend {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -202,7 +209,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the cross mining dividend of the account.
-    #[structopt(name = "cross_mining_dividend")]
+    #[structopt(name = "cross-mining-dividend")]
     CrossMiningDividend {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -212,7 +219,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the nominate records of the account.
-    #[structopt(name = "nomination_records")]
+    #[structopt(name = "nomination-records")]
     NominationRecords {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -225,7 +232,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the voting information of the account.
-    #[structopt(name = "psedu_nomination_records")]
+    #[structopt(name = "psedu-nomination-records")]
     PseduNominationRecords {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -258,7 +265,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the mining list.
-    #[structopt(name = "psedu_intentions")]
+    #[structopt(name = "psedu-intentions")]
     PseduIntentions {
         /// For getting the mining list version1 of the account.
         #[structopt(value_name = "VERSION", default_value = "0")]
@@ -268,7 +275,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the trading pairs list.
-    #[structopt(name = "trading_pairs")]
+    #[structopt(name = "trading-pairs")]
     TradingPairs {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
@@ -304,7 +311,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the current trustee information of the chain.
-    #[structopt(name = "trustee_session")]
+    #[structopt(name = "trustee-session")]
     TrusteeSession {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
@@ -317,7 +324,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the trustee information of the account.
-    #[structopt(name = "trustee_info")]
+    #[structopt(name = "trustee-info")]
     TrusteeInfo {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
@@ -327,7 +334,7 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the withdrawal transactions of the chain.
-    #[structopt(name = "withdraw_tx")]
+    #[structopt(name = "withdraw-tx")]
     WithdrawTx {
         /// Chain name
         #[structopt(value_name = "CHAIN", default_value = "Bitcoin")]
@@ -337,14 +344,14 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Simulate the generation of next era BTC trustee address.
-    #[structopt(name = "mock_btc_new_trustees")]
+    #[structopt(name = "mock-btc-new-trustees")]
     MockBtcNewTrustees {
         /// 0x-prefix hex hash string for new trustee accounts
         #[structopt(value_name = "ACCOUNTS")]
         candidates: Vec<Hash>,
     },
     /// Get the fee according to the call and transaction length.
-    #[structopt(name = "call_fee")]
+    #[structopt(name = "call-fee")]
     CallFee {
         /// The parameters of Call
         #[structopt(value_name = "PARAMS")]
@@ -356,14 +363,14 @@ pub enum RpcCommand {
         hash: Option<Hash>,
     },
     /// Get the fee weight map, transaction base fee and transaction byte fee.
-    #[structopt(name = "call_fee_map")]
+    #[structopt(name = "call-fee-map")]
     CallFeeMap {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
     },
     /// Get the particular account addresses (council, team, trustees).
-    #[structopt(name = "particular_accounts")]
+    #[structopt(name = "particular-accounts")]
     ParticularAccounts {
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
@@ -412,6 +419,7 @@ impl RpcCommand {
             SystemNetworkState => rpc.system_network_state(),
 
             // ChainX Rpc
+            ExtrinsicEvents { hash } => rpc.extrinsic_events(hash),
             NextRenominate { who, hash } => rpc.next_renominate(who, hash),
             Asset { who, index, size, hash } => rpc.asset(who, index, size, hash),
             Assets { index, size, hash } => rpc.assets(index, size, hash),
