@@ -8,6 +8,8 @@ use crate::util;
 pub trait ChainXRpc {
     fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value>;
 
+    fn extrinsic_events(&self, hash: Option<Hash>) -> BoxFuture<Value>;
+
     fn next_renominate(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value>;
 
     fn asset(
@@ -104,6 +106,10 @@ pub trait ChainXRpc {
 impl<T: BatchTransport + 'static> ChainXRpc for ChainXTransport<T> {
     fn block_by_number(&self, number: Option<u64>) -> BoxFuture<Value> {
         self.execute("chainx_getBlockByNumber", vec![util::serialize(number)])
+    }
+
+    fn extrinsic_events(&self, hash: Option<Hash>) -> BoxFuture<Value> {
+        self.execute("chainx_getExtrinsicsEventsByBlockHash", vec![util::serialize(hash)])
     }
 
     fn next_renominate(&self, who: Hash, hash: Option<Hash>) -> BoxFuture<Value> {
