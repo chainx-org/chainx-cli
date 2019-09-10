@@ -12,7 +12,7 @@ cargo build --release
 
 ```
 USAGE:
-    xli <SUBCOMMAND>
+    chainx-cli <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
@@ -27,7 +27,7 @@ SUBCOMMANDS:
 Rpc subcommand.
 
 USAGE:
-    xli rpc <SUBCOMMAND>
+    chainx-cli rpc <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,5 +1,3 @@
-use std::fmt;
-
 use failure::Fail;
 
 pub type Result<T> = std::result::Result<T, Error>;
