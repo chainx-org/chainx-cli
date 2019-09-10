@@ -431,11 +431,27 @@ impl RpcCommand {
             DepositList { chain, index, size, hash } => rpc.deposit_list(chain, index, size, hash),
             StakingDividend { who, hash } => rpc.staking_dividend(who, hash),
             CrossMiningDividend { who, hash } => rpc.cross_mining_dividend(who, hash),
-            NominationRecords { who, version, hash } => rpc.nomination_records(who, version, hash),
-            PseduNominationRecords { who, version, hash } => rpc.psedu_nomination_records(who, version, hash),
+            NominationRecords { who, version, hash } => match version {
+                0 => rpc.nomination_records(who, hash),
+                1 => rpc.nomination_records_v1(who, hash),
+                _ => unreachable!("Unknown version"),
+            }
+            PseduNominationRecords { who, version, hash } => match version {
+                0 => rpc.psedu_nomination_records(who, hash),
+                1 => rpc.psedu_nomination_records_v1(who, hash),
+                _ => unreachable!("Unknown version"),
+            }
             Intention { addr, hash } => rpc.intention(addr, hash),
-            Intentions { version, hash } => rpc.intentions(version, hash),
-            PseduIntentions { version, hash } => rpc.psedu_intentions(version, hash),
+            Intentions { version, hash } => match version {
+                0 => rpc.intentions(hash),
+                1 => rpc.intentions_v1(hash),
+                _ => unreachable!("Unknown version"),
+            }
+            PseduIntentions { version, hash } => match version {
+                0 => rpc.psedu_intentions(hash),
+                1 => rpc.psedu_intentions_v1(hash),
+                _ => unreachable!("Unknown version"),
+            }
             TradingPairs { hash } => rpc.trading_pairs(hash),
             Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
             Orders { who, index, size, hash} => rpc.orders(who, index, size, hash),

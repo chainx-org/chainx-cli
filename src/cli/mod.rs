@@ -11,7 +11,7 @@ pub fn init() -> Command {
 }
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "xli", author, about)]
+#[structopt(author, about)]
 #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
 pub struct Command {
     #[structopt(subcommand)]
