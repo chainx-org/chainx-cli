@@ -1,3 +1,5 @@
+#[cfg(feature = "internal")]
+mod root;
 mod rpc;
 
 use structopt::clap;
@@ -13,13 +15,7 @@ pub fn init() -> Command {
 #[derive(Debug, StructOpt)]
 #[structopt(author, about)]
 #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
-pub struct Command {
-    #[structopt(subcommand)]
-    pub sub_cmd: SubCommand,
-}
-
-#[derive(Debug, StructOpt)]
-pub enum SubCommand {
+pub enum Command {
     /// Generates completion scripts for your shell.
     #[structopt(name = "completions")]
     Completions {
@@ -32,15 +28,27 @@ pub enum SubCommand {
     #[structopt(name = "rpc")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
+
+    #[cfg(feature = "internal")]
+    /// Root subcommand
+    #[structopt(name = "root")]
+    #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
+    Root(root::RootCommand),
 }
 
-impl SubCommand {
-    pub fn dispatch(self, rpc_url: &str) -> Result<()> {
+impl Command {
+    pub fn dispatch(self, url: &str) -> Result<()> {
+        use Command::*;
         match self {
-            SubCommand::Completions { shell } => {
-                SubCommand::clap().gen_completions_to("xli", shell, &mut std::io::stdout());
+            Completions { shell } => {
+                Command::clap().gen_completions_to(
+                    env!("CARGO_PKG_NAME"),
+                    shell,
+                    &mut std::io::stdout(),
+                );
             }
-            SubCommand::Rpc(rpc) => rpc.dispatch(rpc_url)?,
+            Rpc(rpc) => rpc.dispatch(url)?,
+            Root(root) => root.dispatch(url)?,
         }
         Ok(())
     }

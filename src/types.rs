@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-pub struct Hash(primitive_types::H256);
+pub struct Hash(substrate_primitives::H256);
+
+impl Hash {
+    pub fn into_inner(self) -> substrate_primitives::H256 {
+        self.0
+    }
+}
 
 impl std::str::FromStr for Hash {
     type Err = &'static str;
@@ -9,7 +15,7 @@ impl std::str::FromStr for Hash {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("0x") || s.starts_with("0X") {
             let hash = s[2..]
-                .parse::<primitive_types::H256>()
+                .parse::<substrate_primitives::H256>()
                 .map_err(|_| "Invalid Hash Length")?;
             Ok(Hash(hash))
         } else {
@@ -18,13 +24,8 @@ impl std::str::FromStr for Hash {
     }
 }
 
-/*
-#[derive(Clone, Serialize, Deserialize)]
-pub struct EncodeWrapper(substrate_primitives::storage::StorageKey);
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
-*/
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum Chain {
