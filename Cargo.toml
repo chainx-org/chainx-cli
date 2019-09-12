@@ -24,6 +24,9 @@ system = { package = "srml-system", git = "https://github.com/chainpool/substrat
 support = { package = "srml-support", git = "https://github.com/chainpool/substrate", optional = true }
 chainx-runtime = { path = "../ChainX/runtime", optional = true }
 chainx-primitives = { path = "../ChainX/primitives", optional = true }
+xassets = { package = "xrml-xassets-assets", path = "../ChainX/xrml/xassets/assets", optional = true }
+xstaking = { package = "xrml-xmining-staking", path = "../ChainX/xrml/xmining/staking", optional = true }
+xtokens = { package = "xrml-xmining-tokens", path = "../ChainX/xrml/xmining/tokens", optional = true }
 xmultisig = { package = "xrml-xmultisig", path = "../ChainX/xrml/xmultisig", optional = true }
 
 [features]
@@ -34,5 +37,8 @@ internal = [
     "support",
     "chainx-runtime",
     "chainx-primitives",
+    "xassets",
+    "xstaking",
+    "xtokens",
     "xmultisig",
 ]

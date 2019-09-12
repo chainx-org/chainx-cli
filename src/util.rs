@@ -14,8 +14,5 @@ pub fn deserialize<T: DeserializeOwned>(value: serde_json::Value) -> Result<T> {
 #[cfg(feature = "internal")]
 pub fn blake2_256_and_hex(key: &[u8]) -> String {
     let hash = substrate_primitives::blake2_256(key);
-    format!(
-        "0x{:}",
-        substrate_primitives::hexdisplay::HexDisplay::from(&hash)
-    )
+    format!("0x{:}", substrate_primitives::hexdisplay::HexDisplay::from(&hash))
 }

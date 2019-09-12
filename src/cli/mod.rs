@@ -40,16 +40,14 @@ impl Command {
     pub fn dispatch(self, url: &str) -> Result<()> {
         use Command::*;
         match self {
-            Completions { shell } => {
-                Command::clap().gen_completions_to(
-                    env!("CARGO_PKG_NAME"),
-                    shell,
-                    &mut std::io::stdout(),
-                );
-            }
+            Completions { shell } => Self::gen_shell_completion(shell),
             Rpc(rpc) => rpc.dispatch(url)?,
             Root(root) => root.dispatch(url)?,
         }
         Ok(())
+    }
+
+    fn gen_shell_completion(shell: clap::Shell) {
+        Self::clap().gen_completions_to(env!("CARGO_PKG_NAME"), shell, &mut std::io::stdout());
     }
 }

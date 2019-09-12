@@ -9,6 +9,12 @@ impl Hash {
     }
 }
 
+impl From<[u8; 32]> for Hash {
+    fn from(inner: [u8; 32]) -> Self {
+        Self(substrate_primitives::H256::from(inner))
+    }
+}
+
 impl std::str::FromStr for Hash {
     type Err = &'static str;
 
@@ -75,6 +81,17 @@ pub enum Token {
     LBTC,
 }
 
+impl Token {
+    pub fn name(&self) -> Vec<u8> {
+        match self {
+            Token::PCX => b"PCX".to_vec(),
+            Token::SDOT => b"SDOT".to_vec(),
+            Token::XBTC => b"BTC".to_vec(),
+            Token::LBTC => b"L-BTC".to_vec(),
+        }
+    }
+}
+
 impl std::str::FromStr for Token {
     type Err = &'static str;
 
@@ -88,6 +105,3 @@ impl std::str::FromStr for Token {
         }
     }
 }
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct DecodeWrapper(substrate_primitives::storage::StorageData);

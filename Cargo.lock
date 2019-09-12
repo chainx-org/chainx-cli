@@ -340,6 +340,9 @@ dependencies = [
  "structopt 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-primitives 2.0.0 (git+https://github.com/chainpool/substrate)",
  "web3 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xrml-xassets-assets 1.0.0",
+ "xrml-xmining-staking 1.0.0",
+ "xrml-xmining-tokens 1.0.0",
  "xrml-xmultisig 1.0.0",
 ]
 

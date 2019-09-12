@@ -30,11 +30,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         ChainXTransport { transport }
     }
 
-    pub fn submit_batch(
-        &self,
-        method: &str,
-        batch_params: Vec<Vec<Value>>,
-    ) -> BoxFuture<Vec<Result<Value>>> {
+    pub fn submit_batch(&self, method: &str, batch_params: Vec<Vec<Value>>) -> BoxFuture<Vec<Result<Value>>> {
         let requests = batch_params
             .into_iter()
             .map(|params| (method, params))
@@ -42,10 +38,7 @@ impl<T: BatchTransport> ChainXTransport<T> {
         Box::new(self.submit_batch_opt(requests))
     }
 
-    pub fn submit_batch_opt(
-        &self,
-        requests: Vec<(&str, Vec<Value>)>,
-    ) -> BoxFuture<Vec<Result<Value>>> {
+    pub fn submit_batch_opt(&self, requests: Vec<(&str, Vec<Value>)>) -> BoxFuture<Vec<Result<Value>>> {
         let requests = requests
             .into_iter()
             .map(|(method, params)| self.transport.prepare(method, params))
