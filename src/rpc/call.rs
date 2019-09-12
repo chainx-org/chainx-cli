@@ -174,7 +174,7 @@ fn gen_extrinsic(
         }
     });
 
-    // signature，func | signature：(sender, sign, index, era, acceleration)
+    // signature，func | signature：(sender, signature, index, era, acceleration)
     let unchecked_extrinsic = chainx_runtime::UncheckedExtrinsic {
         signature: Some((signed, signature, index, era, acc)),
         function,
