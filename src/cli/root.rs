@@ -4,7 +4,7 @@ use structopt::StructOpt;
 use crate::error::Result;
 use crate::rpc::RpcAndCall;
 use crate::transport::{http_connect, ws_connect};
-use crate::types::Hash;
+use crate::types::{Hash, Token};
 
 #[derive(Debug, StructOpt)]
 pub enum RootCommand {
@@ -57,7 +57,7 @@ pub enum ProposeCommand {
         who: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// The acceleration speed of transaction packaging.
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
@@ -70,7 +70,7 @@ pub enum ProposeCommand {
         key: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// The acceleration speed of transaction packaging.
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
@@ -83,7 +83,7 @@ pub enum ProposeCommand {
         key: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// The acceleration speed of transaction packaging.
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,

@@ -24,8 +24,26 @@ impl std::str::FromStr for Hash {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
+#[derive(Debug)]
+pub enum HashOrHeight {
+    Height(u64),
+    Hash(Hash),
+}
+
+impl std::str::FromStr for HashOrHeight {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            let hash = s.parse::<Hash>().map_err(|_| "Invalid Hash Length")?;
+            return Ok(HashOrHeight::Hash(hash));
+        }
+        match s.parse::<u64>() {
+            Ok(height) => Ok(HashOrHeight::Height(height)),
+            Err(_) => Err("The param is neither a 0x-prefix hex hash nor a number"),
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub enum Chain {
@@ -47,23 +65,29 @@ impl std::str::FromStr for Chain {
     }
 }
 
-#[derive(Debug)]
-pub enum HashOrHeight {
-    Height(u64),
-    Hash(Hash),
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
+pub enum Token {
+    PCX,
+    SDOT,
+    #[serde(rename = "BTC")]
+    XBTC,
+    #[serde(rename = "L-BTC")]
+    LBTC,
 }
 
-impl std::str::FromStr for HashOrHeight {
+impl std::str::FromStr for Token {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with("0x") || s.starts_with("0X") {
-            let hash = s.parse::<Hash>().map_err(|_| "Invalid Hash Length")?;
-            return Ok(HashOrHeight::Hash(hash));
-        }
-        match s.parse::<u64>() {
-            Ok(height) => Ok(HashOrHeight::Height(height)),
-            Err(_) => Err("The param is neither a 0x-prefix hex hash nor a number"),
+        match s {
+            "PCX" | "pcx" => Ok(Token::PCX),
+            "SDOT" | "S-DOT" | "sdot" | "s-dot" => Ok(Token::SDOT),
+            "XBTC" | "X-BTC" | "BTC" | "xbtc" | "x-btc" | "btc" => Ok(Token::XBTC),
+            "LBTC" | "L-BTC" | "lbtc" | "l-btc" => Ok(Token::LBTC),
+            _ => Err("Unknown Token Type"),
         }
     }
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct DecodeWrapper(substrate_primitives::storage::StorageData);

@@ -7,17 +7,17 @@ use substrate_primitives::{blake2_256, hexdisplay::HexDisplay};
 
 use crate::rpc::author::AuthorRpc;
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::Hash;
+use crate::types::{Hash, Token};
 
 pub trait ChainXCall: AuthorRpc {
     /*
-    fn transfer(&self, key: Hash, to: Hash, value: u64, token: String, memo: Option<String>, acc: u32) -> BoxFuture<Value>;
+    fn transfer(&self, key: Hash, to: Hash, value: u64, token: Token, memo: Option<String>, acc: u32) -> BoxFuture<Value>;
     fn nominate(&self, key: Hash, to: Hash, value: u64, memo: Option<String>, acc: u32) -> BoxFuture<Value>;
     fn unnominate(&self, key: Hash, to: Hash, value: u64, memo: Option<String>, acc: u32) -> BoxFuture<Value>;
     fn refresh(&self, key: Hash, url: Option<Hash>, to_run: Option<bool>, next_key: Option<Hash>, about: Option<String>, acc: u32) -> BoxFuture<Value>;
     fn claim(&self, key: Hash, to: Hash, acc: u32) -> BoxFuture<Value>;
     fn register(&self, key: Hash, name: String) -> BoxFuture<Value>;
-    fn deposit_claim(&self, key: Hash, token: String, acc: u32) -> BoxFuture<Value>;
+    fn deposit_claim(&self, key: Hash, token: Token, acc: u32) -> BoxFuture<Value>;
     fn check_vote_weight(&self, number: u32) -> BoxFuture<Value>;
     */
 }
@@ -48,7 +48,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
 
     }
 
-    fn deposit_claim(&self, key: Hash, token: String, acc: u32) -> BoxFuture<Value> {
+    fn deposit_claim(&self, key: Hash, token: Token, acc: u32) -> BoxFuture<Value> {
 
     }
 
