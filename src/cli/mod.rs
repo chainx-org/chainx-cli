@@ -42,6 +42,7 @@ impl Command {
         match self {
             Completions { shell } => Self::gen_shell_completion(shell),
             Rpc(rpc) => rpc.dispatch(url)?,
+            #[cfg(feature = "internal")]
             Root(root) => root.dispatch(url)?,
         }
         Ok(())

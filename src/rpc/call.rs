@@ -22,6 +22,7 @@ pub trait ChainXCall: AuthorRpc + ChainRpc + StorageRpc {
     fn transfer(&self, key: Hash, to: Hash, value: u64, token: Token, memo: String, acc: u32) -> BoxFuture<Value>;
     fn multisig_propose(&self, key: Hash, multisig_addr: Hash, proposal: RuntimeCall, acc: u32) -> BoxFuture<Value>;
     fn multisig_confirm(&self, key: Hash, multisig_addr: Hash, id: Hash, acc: u32) -> BoxFuture<Value>;
+    fn multisig_remove(&self, key: Hash, multisig_addr: Hash, id: Hash, acc: u32) -> BoxFuture<Value>;
     fn nominate(&self, key: Hash, target: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value>;
     fn unnominate(&self, key: Hash, target: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value>;
     fn renominate(&self, key: Hash, from: Hash, to: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value>;
@@ -72,6 +73,14 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
         let multisig = AccountId::from_h256(multisig_addr.into_inner());
         let id = id.into_inner();
         let func = RuntimeCall::XMultiSig(xmultisig::Call::confirm::<Runtime>(multisig, id));
+        self.submit_call(pair, func, acc)
+    }
+
+    fn multisig_remove(&self, key: Hash, multisig_addr: Hash, id: Hash, acc: u32) -> BoxFuture<Value> {
+        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let multisig = AccountId::from_h256(multisig_addr.into_inner());
+        let id = id.into_inner();
+        let func = RuntimeCall::XMultiSig(xmultisig::Call::remove_multi_sig_for::<Runtime>(multisig, id));
         self.submit_call(pair, func, acc)
     }
 
