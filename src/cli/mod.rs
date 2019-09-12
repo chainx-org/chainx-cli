@@ -29,8 +29,8 @@ pub enum Command {
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
 
-    #[cfg(feature = "internal")]
     /// Root subcommand
+    #[cfg(feature = "internal")]
     #[structopt(name = "root")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Root(root::RootCommand),
