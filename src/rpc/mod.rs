@@ -24,17 +24,29 @@ macro_rules! impl_rpc {
 }
 
 mod author;
+#[cfg(feature = "internal")]
+mod call;
 mod chain;
 mod chainx;
 mod state;
 mod system;
 
 pub use self::author::AuthorRpc;
+#[cfg(feature = "internal")]
+pub use self::call::ChainXCall;
 pub use self::chain::ChainRpc;
 pub use self::chainx::ChainXRpc;
+#[cfg(feature = "internal")]
+pub use self::state::storage::StorageRpc;
 pub use self::state::StateRpc;
 pub use self::system::SystemRpc;
 
-pub trait Rpc: AuthorRpc + ChainRpc + ChainXRpc + StateRpc + SystemRpc {}
+pub trait Rpc: ChainRpc + ChainXRpc + StateRpc + SystemRpc {}
 
-impl<T: AuthorRpc + ChainRpc + ChainXRpc + StateRpc + SystemRpc> Rpc for T {}
+impl<T: ChainRpc + ChainXRpc + StateRpc + SystemRpc> Rpc for T {}
+
+#[cfg(feature = "internal")]
+pub trait RpcAndCall: Rpc + StorageRpc + ChainXCall {}
+
+#[cfg(feature = "internal")]
+impl<T: Rpc + StorageRpc + ChainXCall> RpcAndCall for T {}

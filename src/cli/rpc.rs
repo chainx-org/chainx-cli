@@ -4,7 +4,7 @@ use web3::futures::Future;
 use crate::error::Result;
 use crate::rpc::Rpc;
 use crate::transport::{http_connect, ws_connect};
-use crate::types::{Chain, Hash, HashOrHeight};
+use crate::types::{Chain, Hash, HashOrHeight, Token};
 
 #[derive(Debug, StructOpt)]
 pub enum RpcCommand {
@@ -138,7 +138,7 @@ pub enum RpcCommand {
         addr: String,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// Memo
         #[structopt(value_name = "MEMO", default_value = "")]
         memo: String,
@@ -151,7 +151,7 @@ pub enum RpcCommand {
     WithdrawLimit {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,
@@ -161,7 +161,7 @@ pub enum RpcCommand {
     DepositLimit {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
-        token: String,
+        token: Token,
         /// 0x-prefix hex block hash string [default: latest block hash]
         #[structopt(value_name = "HASH")]
         hash: Option<Hash>,

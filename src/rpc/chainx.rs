@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use crate::transport::{BoxFuture, ChainXTransport};
-use crate::types::{Chain, Hash};
+use crate::types::{Chain, Hash, Token};
 
 impl_rpc! {
     pub trait ChainXRpc for ChainXTransport<T> {
@@ -15,10 +15,10 @@ impl_rpc! {
         "chainx_getAssets" => fn assets(&self, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value>;
 
         "chainx_getAddressByAccount" => fn addr_by_account(&self, who: Hash, chain: Chain, hash: Option<Hash>) -> BoxFuture<Value>;
-        "chainx_verifyAddressValidity" => fn verify_addr(&self, token: String, addr: String, memo: String, hash: Option<Hash>) -> BoxFuture<Value>;
+        "chainx_verifyAddressValidity" => fn verify_addr(&self, token: Token, addr: String, memo: String, hash: Option<Hash>) -> BoxFuture<Value>;
 
-        "chainx_getWithdrawalLimitByToken" => fn withdraw_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value>;
-        "chainx_getDepositLimitByToken" => fn deposit_limit(&self, token: String, hash: Option<Hash>) -> BoxFuture<Value>;
+        "chainx_getWithdrawalLimitByToken" => fn withdraw_limit(&self, token: Token, hash: Option<Hash>) -> BoxFuture<Value>;
+        "chainx_getDepositLimitByToken" => fn deposit_limit(&self, token: Token, hash: Option<Hash>) -> BoxFuture<Value>;
 
         "chainx_getWithdrawalList" => fn withdraw_list(&self, chain: Chain, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value>;
         "chainx_getDepositList" => fn deposit_list(&self, chain: Chain, page_index: u32, page_size: u32, hash: Option<Hash>) -> BoxFuture<Value>;

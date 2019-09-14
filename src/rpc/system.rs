@@ -10,6 +10,6 @@ impl_rpc! {
         "system_properties" => fn system_properties(&self) -> BoxFuture<Value>;
         "system_health" => fn system_health(&self) -> BoxFuture<Value>;
         "system_peers" => fn system_peers(&self) -> BoxFuture<Value>;
-        "system_network_state" => fn system_network_state(&self) -> BoxFuture<Value>;
+        "system_networkState" => fn system_network_state(&self) -> BoxFuture<Value>;
     }
 }
