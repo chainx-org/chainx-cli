@@ -224,7 +224,7 @@ pub enum RpcCommand {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
-        /// For getting the nominate records version1 of the account.
+        /// For getting the nominate records version1 of the account
         #[structopt(value_name = "VERSION", default_value = "0")]
         version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
@@ -237,7 +237,7 @@ pub enum RpcCommand {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
-        /// For getting the voting information version1 of the account.
+        /// For getting the voting information version1 of the account
         #[structopt(value_name = "VERSION", default_value = "0")]
         version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
@@ -257,7 +257,7 @@ pub enum RpcCommand {
     /// Get the all node information.
     #[structopt(name = "intentions")]
     Intentions {
-        /// For getting the all node information version1 of the account.
+        /// For getting the all node information version1 of the account
         #[structopt(value_name = "VERSION", default_value = "0")]
         version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
@@ -267,7 +267,7 @@ pub enum RpcCommand {
     /// Get the mining list.
     #[structopt(name = "psedu-intentions")]
     PseduIntentions {
-        /// For getting the mining list version1 of the account.
+        /// For getting the mining list version1 of the account
         #[structopt(value_name = "VERSION", default_value = "0")]
         version: u32,
         /// 0x-prefix hex block hash string [default: latest block hash]
@@ -404,7 +404,7 @@ impl RpcCommand {
                 Some(HashOrHeight::Height(number)) => rpc.block_by_number(Some(number)),
                 Some(HashOrHeight::Hash(hash)) => rpc.block_by_hash(Some(hash)),
                 None => rpc.block_by_hash(None),
-            }
+            },
 
             // State Rpc
             RuntimeVersion { hash } => rpc.runtime_version(hash),
@@ -435,26 +435,26 @@ impl RpcCommand {
                 0 => rpc.nomination_records(who, hash),
                 1 => rpc.nomination_records_v1(who, hash),
                 _ => unreachable!("Unknown version"),
-            }
+            },
             PseduNominationRecords { who, version, hash } => match version {
                 0 => rpc.psedu_nomination_records(who, hash),
                 1 => rpc.psedu_nomination_records_v1(who, hash),
                 _ => unreachable!("Unknown version"),
-            }
+            },
             Intention { addr, hash } => rpc.intention(addr, hash),
             Intentions { version, hash } => match version {
                 0 => rpc.intentions(hash),
                 1 => rpc.intentions_v1(hash),
                 _ => unreachable!("Unknown version"),
-            }
+            },
             PseduIntentions { version, hash } => match version {
                 0 => rpc.psedu_intentions(hash),
                 1 => rpc.psedu_intentions_v1(hash),
                 _ => unreachable!("Unknown version"),
-            }
+            },
             TradingPairs { hash } => rpc.trading_pairs(hash),
             Quotations { id, piece, hash } => rpc.quotations(id, piece, hash),
-            Orders { who, index, size, hash} => rpc.orders(who, index, size, hash),
+            Orders { who, index, size, hash } => rpc.orders(who, index, size, hash),
             TrusteeSession { chain, era, hash } => rpc.trustee_session_info(chain, era, hash),
             TrusteeInfo { who, hash } => rpc.trustee_by_account(who, hash),
             WithdrawTx { chain, hash } => rpc.withdraw_tx(chain, hash),
