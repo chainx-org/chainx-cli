@@ -1,4 +1,6 @@
 #[cfg(feature = "internal")]
+mod call;
+#[cfg(feature = "internal")]
 mod root;
 mod rpc;
 
@@ -17,7 +19,6 @@ pub fn init() -> Command {
 #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
 pub enum Command {
     /// Generates completion scripts for your shell.
-    #[structopt(name = "completions")]
     Completions {
         /// The shell to generate the script for
         #[structopt(value_name = "SHELL")]
@@ -25,13 +26,16 @@ pub enum Command {
     },
 
     /// Rpc subcommand.
-    #[structopt(name = "rpc")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
 
-    /// Root subcommand
+    /// Call subcommand.
     #[cfg(feature = "internal")]
-    #[structopt(name = "root")]
+    #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
+    Call(call::CallCommand),
+
+    /// Root subcommand.
+    #[cfg(feature = "internal")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Root(root::RootCommand),
 }
@@ -42,6 +46,8 @@ impl Command {
         match self {
             Completions { shell } => Self::gen_shell_completion(shell),
             Rpc(rpc) => rpc.dispatch(url)?,
+            #[cfg(feature = "internal")]
+            Call(call) => call.dispatch(url)?,
             #[cfg(feature = "internal")]
             Root(root) => root.dispatch(url)?,
         }

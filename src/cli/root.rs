@@ -7,14 +7,19 @@ use crate::transport::{http_connect, ws_connect};
 use crate::types::{Hash, Token};
 
 #[derive(Debug, StructOpt)]
-pub enum RootCommand {
+pub struct RootCommand {
+    /// 0x-prefix hex hash string, which represents the private key of the sender
+    key: Hash,
+    #[structopt(subcommand)]
+    root_type: RootCommandType,
+}
+
+#[derive(Debug, StructOpt)]
+enum RootCommandType {
     /// Confirm a pending proposal given its id.
     #[structopt(name = "confirm")]
     Confirm {
-        /// 0x-prefix hex hash string that represents the private key of the sender
-        #[structopt(value_name = "KEY")]
-        key: Hash,
-        /// 0x-prefix hex hash string that represents the ID of a pending proposal
+        /// 0x-prefix hex hash string, which represents the ID of a pending proposal
         #[structopt(value_name = "ID")]
         id: Hash,
         /// The acceleration speed of transaction packaging.
@@ -29,62 +34,50 @@ pub enum RootCommand {
 }
 
 #[derive(Debug, StructOpt)]
-pub enum ProposeCommand {
+enum ProposeCommand {
     /// Set nomination record.
     #[structopt(name = "nomination-record")]
     SetNominationRecord {
-        /// 0x-prefix hex hash string that represents the private key of the sender
-        #[structopt(value_name = "KEY")]
-        key: Hash,
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
         /// The name of intention
         #[structopt(value_name = "NAME")]
         name: Option<String>,
-        /// The acceleration speed of transaction packaging.
+        /// The acceleration speed of transaction packaging
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
     },
     /// Set deposit record.
     #[structopt(name = "deposit-record")]
     SetDepositRecord {
-        /// 0x-prefix hex hash string that represents the private key of the sender
-        #[structopt(value_name = "KEY")]
-        key: Hash,
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: Token,
-        /// The acceleration speed of transaction packaging.
+        /// The acceleration speed of transaction packaging
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
     },
     /// Set claim restriction.
     #[structopt(name = "claim-restriction")]
     SetClaimRestriction {
-        /// 0x-prefix hex hash string that represents the private key of the sender
-        #[structopt(value_name = "KEY")]
-        key: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: Token,
-        /// The acceleration speed of transaction packaging.
+        /// The acceleration speed of transaction packaging
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
     },
-    /// Set psedu intention profs
+    /// Set psedu intention profs.
     #[structopt(name = "psedu-intention-profs")]
     SetPseduIntentionProfs {
-        /// 0x-prefix hex hash string that represents the private key of the sender
-        #[structopt(value_name = "KEY")]
-        key: Hash,
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: Token,
-        /// The acceleration speed of transaction packaging.
+        /// The acceleration speed of transaction packaging
         #[structopt(value_name = "ACCELERATION", default_value = "1")]
         acc: u32,
     },
@@ -106,8 +99,9 @@ impl RootCommand {
     /// Dispatch root subcommand implement
     fn dispatch_impl<RC: RpcAndCall>(self, _rc: RC) -> Result<()> {
         use ProposeCommand::*;
-        use RootCommand::*;
-        match self {
+        use RootCommandType::*;
+        let _key = self.key;
+        match self.root_type {
             Confirm { .. } => unimplemented!(),
             Propose(propose) => match propose {
                 SetNominationRecord { .. } => unimplemented!(),
