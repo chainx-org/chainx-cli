@@ -1,6 +1,6 @@
 use parity_codec::{Compact, Encode};
 use serde_json::Value;
-use web3::futures::{future, Future};
+use web3::futures::Future;
 
 use chainx_primitives::{Acceleration, AccountId, Index};
 use chainx_runtime::{Call as RuntimeCall, Runtime};
@@ -12,7 +12,7 @@ use substrate_primitives::Pair as TraitPair;
 
 use crate::rpc::author::AuthorRpc;
 use crate::rpc::chain::ChainRpc;
-use crate::rpc::state::storage::{DecodeWrapper, StorageRpc};
+use crate::rpc::state::storage::StorageRpc;
 use crate::transport::{BoxFuture, ChainXTransport};
 use crate::types::{Hash, Token};
 use crate::util;
@@ -37,11 +37,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
         Box::new(
             self.block_hash(Some(0))
                 .and_then(util::deserialize::<Hash>)
-                .join(
-                    self.account_nonce(sender, None)
-                        .and_then(util::deserialize::<Option<DecodeWrapper>>)
-                        .and_then(|storage| storage.map_or(future::ok(0), |decoder| future::ok(decoder.nonce()))),
-                )
+                .join(self.account_nonce(sender, None))
                 .and_then(move |(hash, nonce)| {
                     let key = LocalKey::Ed25519(pair);
                     let era = Era::Immortal;
