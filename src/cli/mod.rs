@@ -3,6 +3,8 @@ mod call;
 #[cfg(feature = "internal")]
 mod root;
 mod rpc;
+#[cfg(feature = "internal")]
+mod storage;
 
 use structopt::clap;
 use structopt::StructOpt;
@@ -24,16 +26,17 @@ pub enum Command {
         #[structopt(value_name = "SHELL")]
         shell: clap::Shell,
     },
-
     /// Rpc subcommand.
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
-
+    /// Storage subcommand.
+    #[cfg(feature = "internal")]
+    #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
+    Storage(storage::StorageCommand),
     /// Call subcommand.
     #[cfg(feature = "internal")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Call(call::CallCommand),
-
     /// Root subcommand.
     #[cfg(feature = "internal")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
@@ -46,6 +49,8 @@ impl Command {
         match self {
             Completions { shell } => Self::gen_shell_completion(shell),
             Rpc(rpc) => rpc.dispatch(url)?,
+            #[cfg(feature = "internal")]
+            Storage(storage) => storage.dispatch(url)?,
             #[cfg(feature = "internal")]
             Call(call) => call.dispatch(url)?,
             #[cfg(feature = "internal")]

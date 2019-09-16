@@ -19,15 +19,33 @@ impl std::str::FromStr for Hash {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with("0x") || s.starts_with("0X") {
-            let hash = s[2..]
-                .parse::<substrate_primitives::H256>()
-                .map_err(|_| "Invalid Hash Length")?;
-            Ok(Hash(hash))
-        } else {
-            Err("Invalid Hash: 0x-prefix is missing")
+        match s {
+            "council" | "Council" | "COUNCIL" => Ok(Hash(council_account())),
+            "team" | "Team" | "TEAM" => Ok(Hash(team_account())),
+            _ => {
+                if s.starts_with("0x") || s.starts_with("0X") {
+                    let hash = s[2..]
+                        .parse::<substrate_primitives::H256>()
+                        .map_err(|_| "Invalid Hash Length")?;
+                    Ok(Hash(hash))
+                } else {
+                    Err("Invalid Hash: 0x-prefix is missing")
+                }
+            }
         }
     }
+}
+
+fn council_account() -> substrate_primitives::H256 {
+    "67df26a755e0c31ac81e2ed530d147d7f2b9a3f5a570619048c562b1ed00dfdd"
+        .parse()
+        .unwrap()
+}
+
+fn team_account() -> substrate_primitives::H256 {
+    "6193a00c655f836f9d8a62ed407096381f02f8272ea3ea0df0fd66c08c53af81"
+        .parse()
+        .unwrap()
 }
 
 #[derive(Debug)]
