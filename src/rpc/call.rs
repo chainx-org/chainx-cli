@@ -1,4 +1,4 @@
-use parity_codec::{Compact, Encode};
+use codec::{Compact, Encode};
 use serde_json::Value;
 use web3::futures::Future;
 

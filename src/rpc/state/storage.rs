@@ -16,19 +16,19 @@ pub struct DecodeWrapper(substrate_primitives::storage::StorageData);
 
 impl DecodeWrapper {
     pub fn nonce(self) -> u64 {
-        parity_codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
+        codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
     }
 
     pub fn addr_info(self) -> xmultisig::AddrInfo<AccountId> {
-        parity_codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
+        codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
     }
 
     pub fn pending_list(self) -> Vec<substrate_primitives::H256> {
-        parity_codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
+        codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
     }
 
     pub fn pending_state(self) -> xmultisig::PendingState<RuntimeCall> {
-        parity_codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
+        codec::Decode::decode(&mut (self.0).0.as_slice()).expect("Decode shouldn't be fail")
     }
 }
 
