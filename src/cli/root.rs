@@ -37,7 +37,7 @@ enum RootCommandType {
 enum ProposeCommand {
     /// Set nomination record.
     #[structopt(name = "nomination-record")]
-    SetNominationRecord {
+    NominationRecord {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
@@ -50,7 +50,7 @@ enum ProposeCommand {
     },
     /// Set deposit record.
     #[structopt(name = "deposit-record")]
-    SetDepositRecord {
+    DepositRecord {
         /// 0x-prefix hex hash string for account
         #[structopt(value_name = "ACCOUNT")]
         who: Hash,
@@ -63,7 +63,7 @@ enum ProposeCommand {
     },
     /// Set claim restriction.
     #[structopt(name = "claim-restriction")]
-    SetClaimRestriction {
+    ClaimRestriction {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: Token,
@@ -73,7 +73,7 @@ enum ProposeCommand {
     },
     /// Set psedu intention profs.
     #[structopt(name = "psedu-intention-profs")]
-    SetPseduIntentionProfs {
+    PseduIntentionProfs {
         /// Token name
         #[structopt(value_name = "TOKEN", default_value = "BTC")]
         token: Token,
@@ -104,10 +104,10 @@ impl RootCommand {
         match self.root_type {
             Confirm { .. } => unimplemented!(),
             Propose(propose) => match propose {
-                SetNominationRecord { .. } => unimplemented!(),
-                SetDepositRecord { .. } => unimplemented!(),
-                SetClaimRestriction { .. } => unimplemented!(),
-                SetPseduIntentionProfs { .. } => unimplemented!(),
+                NominationRecord { .. } => unimplemented!(),
+                DepositRecord { .. } => unimplemented!(),
+                ClaimRestriction { .. } => unimplemented!(),
+                PseduIntentionProfs { .. } => unimplemented!(),
             },
         }
     }

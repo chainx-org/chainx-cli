@@ -128,6 +128,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
 }
 
 #[allow(unused)]
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone)]
 enum LocalKey<'a> {
     Seed([u8; 32]),
@@ -145,7 +146,7 @@ impl<'a> RawSeed<'a> {
     // Unsafe, for test only
     fn pair(&self) -> Pair {
         let seed = &self.0;
-        let mut s: [u8; 32] = [' ' as u8; 32];
+        let mut s: [u8; 32] = [b' '; 32];
         let len = std::cmp::min(32, seed.len());
         s[..len].copy_from_slice(&seed.as_bytes()[..len]);
         Pair::from_seed(s)
