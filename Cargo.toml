@@ -30,6 +30,7 @@ xtokens = { package = "xrml-xmining-tokens", path = "../ChainX/xrml/xmining/toke
 xmultisig = { package = "xrml-xmultisig", path = "../ChainX/xrml/xmultisig", optional = true }
 
 [features]
+default = []
 internal = [
     "codec",
     "sr-primitives",
