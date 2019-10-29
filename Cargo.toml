@@ -1,6 +1,6 @@
 [package]
 name = "chainx-cli"
-version = "1.0.6"
+version = "1.0.7"
 authors = ["ChainX <https://github.com/chainx-org>"]
 description = "A command-line tool of ChainX"
 edition = "2018"
