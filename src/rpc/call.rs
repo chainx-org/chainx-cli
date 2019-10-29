@@ -48,7 +48,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn transfer(&self, key: Hash, to: Hash, value: u64, token: Token, memo: String, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let to: chainx_runtime::Address = AccountId::from_h256(to.into_inner()).into();
         let token = token.name();
         let memo = memo.into_bytes();
@@ -57,7 +57,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn multisig_propose(&self, key: Hash, multisig_addr: Hash, proposal: RuntimeCall, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let multisig = AccountId::from_h256(multisig_addr.into_inner());
         let proposal = Box::new(proposal);
         let func = RuntimeCall::XMultiSig(xmultisig::Call::execute::<Runtime>(multisig, proposal));
@@ -65,7 +65,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn multisig_confirm(&self, key: Hash, multisig_addr: Hash, id: Hash, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let multisig = AccountId::from_h256(multisig_addr.into_inner());
         let id = id.into_inner();
         let func = RuntimeCall::XMultiSig(xmultisig::Call::confirm::<Runtime>(multisig, id));
@@ -73,7 +73,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn multisig_remove(&self, key: Hash, multisig_addr: Hash, id: Hash, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let multisig = AccountId::from_h256(multisig_addr.into_inner());
         let id = id.into_inner();
         let func = RuntimeCall::XMultiSig(xmultisig::Call::remove_multi_sig_for::<Runtime>(multisig, id));
@@ -81,7 +81,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn nominate(&self, key: Hash, target: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let target: chainx_runtime::Address = AccountId::from_h256(target.into_inner()).into();
         let memo = memo.into_bytes();
         let func = RuntimeCall::XStaking(xstaking::Call::nominate::<Runtime>(target, value, memo));
@@ -89,7 +89,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn unnominate(&self, key: Hash, target: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let target: chainx_runtime::Address = AccountId::from_h256(target.into_inner()).into();
         let memo = memo.into_bytes();
         let func = RuntimeCall::XStaking(xstaking::Call::unnominate::<Runtime>(target, value, memo));
@@ -97,7 +97,7 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn renominate(&self, key: Hash, from: Hash, to: Hash, value: u64, memo: String, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let from: chainx_runtime::Address = AccountId::from_h256(from.into_inner()).into();
         let to: chainx_runtime::Address = AccountId::from_h256(to.into_inner()).into();
         let memo = memo.into_bytes();
@@ -106,21 +106,21 @@ impl<T: web3::BatchTransport + 'static> ChainXCall for ChainXTransport<T> {
     }
 
     fn unfreeze(&self, key: Hash, target: Hash, index: u32, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let target: chainx_runtime::Address = AccountId::from_h256(target.into_inner()).into();
         let func = RuntimeCall::XStaking(xstaking::Call::unfreeze::<Runtime>(target, index));
         self.submit_call(pair, func, acc)
     }
 
     fn vote_claim(&self, key: Hash, target: Hash, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let target: chainx_runtime::Address = AccountId::from_h256(target.into_inner()).into();
         let func = RuntimeCall::XStaking(xstaking::Call::claim::<Runtime>(target));
         self.submit_call(pair, func, acc)
     }
 
     fn deposit_claim(&self, key: Hash, token: Token, acc: u32) -> BoxFuture<Value> {
-        let pair = Pair::from_seed(key.into_inner().to_fixed_bytes());
+        let pair = Pair::from_seed(key.into_inner().as_fixed_bytes());
         let token = token.name();
         let func = RuntimeCall::XTokens(xtokens::Call::claim::<Runtime>(token));
         self.submit_call(pair, func, acc)
@@ -149,7 +149,7 @@ impl<'a> RawSeed<'a> {
         let mut s: [u8; 32] = [b' '; 32];
         let len = std::cmp::min(32, seed.len());
         s[..len].copy_from_slice(&seed.as_bytes()[..len]);
-        Pair::from_seed(s)
+        Pair::from_seed(&s)
     }
 }
 
@@ -162,7 +162,7 @@ fn gen_extrinsic(
     acc: Acceleration,
 ) -> String {
     let pair = match key {
-        LocalKey::Seed(seed) => Pair::from_seed(seed),
+        LocalKey::Seed(seed) => Pair::from_seed(&seed),
         LocalKey::RawSeed(raw_seed) => RawSeed::new(raw_seed).pair(),
         LocalKey::Ed25519(pair) => pair,
     };
