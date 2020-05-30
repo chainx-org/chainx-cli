@@ -1,6 +1,6 @@
 [package]
 name = "chainx-cli"
-version = "1.0.6"
+version = "1.1.0"
 authors = ["ChainX <https://github.com/chainx-org>"]
 description = "A command-line tool of ChainX"
 edition = "2018"
@@ -11,17 +11,20 @@ path = "src/bin/main.rs"
 
 [dependencies]
 structopt = "0.3"
-failure = { version = "0.1", features = ["derive"] }
+thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 web3 = "0.8"
-substrate-primitives = { git = "https://github.com/chainpool/substrate" }
+
+# Substrate
+substrate-primitives = { git = "https://github.com/chainpool/substrate", branch = "chainx-master" }
+ed25519-dalek = "=1.0.0-pre.2"  # fix compilation error
 
 # Feature `internal`
 codec = { package = "parity-codec", version = "3.5", optional = true }
-sr-primitives = { git = "https://github.com/chainpool/substrate", optional = true }
-system = { package = "srml-system", git = "https://github.com/chainpool/substrate", optional = true }
-support = { package = "srml-support", git = "https://github.com/chainpool/substrate", optional = true }
+sr-primitives = { git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
+system = { package = "srml-system", git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
+support = { package = "srml-support", git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
 chainx-runtime = { path = "../ChainX/runtime", optional = true }
 chainx-primitives = { path = "../ChainX/primitives", optional = true }
 xassets = { package = "xrml-xassets-assets", path = "../ChainX/xrml/xassets/assets", optional = true }
