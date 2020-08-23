@@ -1,10 +1,6 @@
-#[cfg(feature = "internal")]
-mod call;
-#[cfg(feature = "internal")]
-mod root;
+// mod call;
 mod rpc;
-#[cfg(feature = "internal")]
-mod storage;
+// mod storage;
 
 use structopt::clap;
 use structopt::StructOpt;
@@ -29,32 +25,24 @@ pub enum Command {
     /// Rpc subcommand.
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Rpc(rpc::RpcCommand),
+    /*
     /// Storage subcommand.
-    #[cfg(feature = "internal")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Storage(storage::StorageCommand),
     /// Call subcommand.
-    #[cfg(feature = "internal")]
     #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
     Call(call::CallCommand),
-    /// Root subcommand.
-    #[cfg(feature = "internal")]
-    #[structopt(setting = clap::AppSettings::DisableHelpSubcommand)]
-    Root(root::RootCommand),
+    */
 }
 
 impl Command {
-    pub fn dispatch(self, url: &str) -> Result<()> {
+    pub async fn dispatch(self, url: &str) -> Result<()> {
         use Command::*;
         match self {
             Completions { shell } => Self::gen_shell_completion(shell),
-            Rpc(rpc) => rpc.dispatch(url)?,
-            #[cfg(feature = "internal")]
-            Storage(storage) => storage.dispatch(url)?,
-            #[cfg(feature = "internal")]
-            Call(call) => call.dispatch(url)?,
-            #[cfg(feature = "internal")]
-            Root(root) => root.dispatch(url)?,
+            Rpc(rpc) => rpc.dispatch(url).await?,
+            /* Storage(storage) => storage.dispatch(url)?,
+            Call(call) => call.dispatch(url)?,*/
         }
         Ok(())
     }

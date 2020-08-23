@@ -1,6 +1,6 @@
 use codec::{Compact, Encode};
 use serde_json::Value;
-use web3::futures::Future;
+use web3::futures::{future::BoxFuture, Future};
 
 use chainx_primitives::{Acceleration, AccountId, Index};
 use chainx_runtime::{Call as RuntimeCall, Runtime};
@@ -13,7 +13,7 @@ use substrate_primitives::Pair as TraitPair;
 use crate::rpc::author::AuthorRpc;
 use crate::rpc::chain::ChainRpc;
 use crate::rpc::state::storage::StorageRpc;
-use crate::transport::{BoxFuture, ChainXTransport};
+use crate::transport::ChainXTransport;
 use crate::types::{Hash, Token};
 use crate::util;
 

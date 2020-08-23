@@ -1,13 +1,16 @@
+use futures::{
+    future::{self, BoxFuture},
+    Future,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use web3::futures::{future, Future};
 
 use chainx_primitives::AccountId;
 use chainx_runtime::{Call as RuntimeCall, Runtime};
 use support::StorageMap;
 
 use crate::rpc::state::StateRpc;
-use crate::transport::{BoxFuture, ChainXTransport};
+use crate::transport::ChainXTransport;
 use crate::types::Hash;
 use crate::util;
 
