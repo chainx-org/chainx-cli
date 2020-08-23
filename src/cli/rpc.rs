@@ -1,5 +1,4 @@
 use structopt::StructOpt;
-use web3::futures::Future;
 
 use crate::error::Result;
 use crate::rpc::Rpc;
@@ -380,20 +379,20 @@ pub enum RpcCommand {
 
 impl RpcCommand {
     /// Dispatch rpc subcommand
-    pub fn dispatch(self, url: &str) -> Result<()> {
+    pub async fn dispatch(self, url: &str) -> Result<()> {
         if url.starts_with("ws://") || url.starts_with("wss://") {
-            let (_handle, chainx) = ws_connect(url)?;
-            self.dispatch_impl(chainx)?;
+            let chainx = ws_connect(url).await?;
+            self.dispatch_impl(chainx).await?;
         } else {
-            let (_handle, chainx) = http_connect(url)?;
-            self.dispatch_impl(chainx)?;
-        }
+            let chainx = http_connect(url)?;
+            self.dispatch_impl(chainx).await?;
+        };
         Ok(())
     }
 
     /// Dispatch rpc subcommand implement
     #[rustfmt::skip]
-    fn dispatch_impl<R: Rpc>(self, rpc: R) -> Result<()> {
+    async fn dispatch_impl<R: Rpc>(self, rpc: R) -> Result<()> {
         use RpcCommand::*;
         let fut = match self {
             // Chain Rpc
@@ -463,7 +462,7 @@ impl RpcCommand {
             CallFeeMap { hash } => rpc.call_fee_map(hash),
             ParticularAccounts { hash } => rpc.particular_accounts(hash),
         };
-        let response = fut.wait()?;
+        let response = fut.await?;
         let response = serde_json::to_string_pretty(&response)?;
         println!("{}", response);
         Ok(())

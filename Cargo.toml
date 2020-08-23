@@ -1,6 +1,6 @@
 [package]
 name = "chainx-cli"
-version = "1.1.0"
+version = "1.1.1"
 authors = ["ChainX <https://github.com/chainx-org>"]
 description = "A command-line tool of ChainX"
 edition = "2018"
@@ -10,39 +10,26 @@ name = "chainx-cli"
 path = "src/bin/main.rs"
 
 [dependencies]
+async-trait = "0.1"
+futures = "0.3"
 structopt = "0.3"
 thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-web3 = "0.8"
+tokio = { version = "0.2", features = ["macros", "rt-threaded"] }
+web3 = "0.13"
 
 # Substrate
+codec = { package = "parity-codec", version = "3.5" }
 substrate-primitives = { git = "https://github.com/chainpool/substrate", branch = "chainx-master" }
+sr-primitives = { git = "https://github.com/chainpool/substrate", branch = "chainx-master" }
+system = { package = "srml-system", git = "https://github.com/chainpool/substrate", branch = "chainx-master" }
+support = { package = "srml-support", git = "https://github.com/chainpool/substrate", branch = "chainx-master" }
 ed25519-dalek = "=1.0.0-pre.2"  # fix compilation error
 
-# Feature `internal`
-codec = { package = "parity-codec", version = "3.5", optional = true }
-sr-primitives = { git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
-system = { package = "srml-system", git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
-support = { package = "srml-support", git = "https://github.com/chainpool/substrate", branch = "chainx-master", optional = true }
-chainx-runtime = { path = "../ChainX/runtime", optional = true }
-chainx-primitives = { path = "../ChainX/primitives", optional = true }
-xassets = { package = "xrml-xassets-assets", path = "../ChainX/xrml/xassets/assets", optional = true }
-xstaking = { package = "xrml-xmining-staking", path = "../ChainX/xrml/xmining/staking", optional = true }
-xtokens = { package = "xrml-xmining-tokens", path = "../ChainX/xrml/xmining/tokens", optional = true }
-xmultisig = { package = "xrml-xmultisig", path = "../ChainX/xrml/xmultisig", optional = true }
-
-[features]
-default = []
-internal = [
-    "codec",
-    "sr-primitives",
-    "system",
-    "support",
-    "chainx-runtime",
-    "chainx-primitives",
-    "xassets",
-    "xstaking",
-    "xtokens",
-    "xmultisig",
-]
+chainx-runtime = { git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
+chainx-primitives = { git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
+xassets = { package = "xrml-xassets-assets", git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
+xstaking = { package = "xrml-xmining-staking", git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
+xtokens = { package = "xrml-xmining-tokens", git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
+xmultisig = { package = "xrml-xmultisig", git = "https://github.com/chainx-org/ChainX", tag = "v1.1.1" }
