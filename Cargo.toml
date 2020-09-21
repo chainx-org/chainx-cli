@@ -1,0 +1,24 @@
+[package]
+name = "chainx-cli"
+version = "2.0.0-pre"
+authors = ["ChainX"]
+edition = "2018"
+
+[dependencies]
+async-std = { version = "1.6.2", features = ["attributes"] }
+codec = { package = "parity-scale-codec", version = "1.3.4", default-features = false, features = ["derive", "full"] }
+env_logger = "0.7.1"
+hex = "0.4"
+structopt = "0.3"
+tempdir = "0.3.7"
+wabt = "0.10.0"
+
+sp-keyring = { version = "2.0.0-rc6" }
+
+frame-system = { version = "2.0.0-rc6" }
+pallet-balances = { version = "2.0.0-rc6" }
+
+chainx-runtime = { git = "https://github.com/chainx-org/ChainX", branch = "develop-2.0" }
+
+substrate-subxt = { git = "https://github.com/paritytech/substrate-subxt" }
+substrate-subxt-client = { git = "https://github.com/paritytech/substrate-subxt" }
