@@ -1,7 +1,11 @@
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_std::prelude::*;
 use substrate_subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
-    sp_runtime::{generic::Header, OpaqueExtrinsic},
+    session::Session,
+    sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic},
     sudo::Sudo,
     system::System,
     Runtime,
@@ -37,6 +41,53 @@ impl Sudo for ChainXRuntime {}
 
 impl Balances for ChainXRuntime {
     type Balance = u128;
+}
+
+/// BABE marker struct
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Aura;
+impl sp_runtime::BoundToRuntimeAppPublic for Aura {
+    type Public = sp_consensus_aura::sr25519::AuthorityId;
+}
+
+/// ImOnline marker struct
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct ImOnline;
+impl sp_runtime::BoundToRuntimeAppPublic for ImOnline {
+    type Public = ImOnlineId;
+}
+
+/// GRANDPA marker struct
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Grandpa;
+impl sp_runtime::BoundToRuntimeAppPublic for Grandpa {
+    type Public = sp_finality_grandpa::AuthorityId;
+}
+
+/// Authority discovery marker struct
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct AuthorityDiscovery;
+impl sp_runtime::BoundToRuntimeAppPublic for AuthorityDiscovery {
+    type Public = AuthorityDiscoveryId;
+}
+
+impl_opaque_keys! {
+    /// Substrate base runtime keys
+    pub struct BasicSessionKeys {
+        /// BABE session key
+        pub aura: Aura,
+        /// GRANDPA session key
+        pub grandpa: Grandpa,
+        /// ImOnline session key
+        pub im_online: ImOnline,
+        /// AuthorityDiscovery session key
+        pub authority_discovery: AuthorityDiscovery,
+    }
+}
+
+impl Session for ChainXRuntime {
+    type ValidatorId = <Self as System>::AccountId;
+    type Keys = BasicSessionKeys;
 }
 
 impl XAssets for ChainXRuntime {}

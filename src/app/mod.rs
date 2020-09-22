@@ -1,4 +1,5 @@
 pub mod balances;
+pub mod session;
 pub mod sudo;
 pub mod system;
 pub mod xstaking;
@@ -12,10 +13,12 @@ use substrate_subxt::PairSigner;
 pub enum Cmd {
     #[structopt(name = "balances")]
     Balances(balances::Balances),
-    #[structopt(name = "system")]
-    System(system::System),
+    #[structopt(name = "session")]
+    Session(session::Session),
     #[structopt(name = "sudo")]
     Sudo(sudo::Sudo),
+    #[structopt(name = "system")]
+    System(system::System),
 
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
@@ -44,9 +47,10 @@ impl App {
         let signer = PairSigner::new(account.pair());
         match self.command {
             Cmd::Balances(balances) => balances.run(self.url, signer).await?,
+            Cmd::Session(session) => session.run(self.url, signer).await?,
+            Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
-            Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
         }
         Ok(())
     }
