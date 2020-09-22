@@ -4,7 +4,7 @@ use structopt::StructOpt;
 use crate::{
     primitives::{AccountId, Balance},
     utils::{build_client, parse_account, Sr25519Signer},
-    xpallet::xstaking::{
+    xpallets::xstaking::{
         BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
         UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
     },

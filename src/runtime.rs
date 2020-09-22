@@ -13,7 +13,7 @@ use substrate_subxt::{
 
 use crate::{
     primitives::*,
-    xpallet::{xassets::XAssets, xmining_asset::XMiningAsset, xstaking::XStaking},
+    xpallets::{xassets::XAssets, xmining_asset::XMiningAsset, xstaking::XStaking},
 };
 
 /// Concrete type definitions for ChainX.

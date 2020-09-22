@@ -6,7 +6,7 @@ pub mod xstaking;
 
 use anyhow::Result;
 use sp_keyring::AccountKeyring;
-use structopt::StructOpt;
+use structopt::{clap::arg_enum, StructOpt};
 use substrate_subxt::PairSigner;
 
 #[derive(StructOpt, Debug)]
@@ -24,11 +24,40 @@ pub enum Cmd {
     XStaking(xstaking::XStaking),
 }
 
+arg_enum! {
+  #[derive(Clone, Debug)]
+  pub enum BuiltinAccounts {
+      Alice,
+      Bob,
+      Charlie,
+      Dave,
+      Eve,
+      Ferdie,
+      One,
+      Two,
+  }
+}
+
+impl Into<AccountKeyring> for BuiltinAccounts {
+    fn into(self) -> AccountKeyring {
+        match self {
+            Self::Alice => AccountKeyring::Alice,
+            Self::Bob => AccountKeyring::Bob,
+            Self::Charlie => AccountKeyring::Charlie,
+            Self::Dave => AccountKeyring::Dave,
+            Self::Eve => AccountKeyring::Eve,
+            Self::Ferdie => AccountKeyring::Ferdie,
+            Self::One => AccountKeyring::One,
+            Self::Two => AccountKeyring::Two,
+        }
+    }
+}
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chainx-cli", no_version)]
 pub struct App {
-    #[structopt(long)]
-    pub signer: Option<AccountKeyring>,
+    #[structopt(long, possible_values = &BuiltinAccounts::variants(), case_insensitive = true)]
+    pub signer: Option<BuiltinAccounts>,
 
     #[structopt(long, default_value = "ws://127.0.0.1:9944")]
     pub url: String,
@@ -43,8 +72,9 @@ impl App {
     }
 
     pub async fn run(self) -> Result<()> {
-        let account = self.signer.unwrap_or_else(|| AccountKeyring::Alice);
-        let signer = PairSigner::new(account.pair());
+        let signer = self.signer.unwrap_or_else(|| BuiltinAccounts::Alice);
+        let signer: AccountKeyring = signer.into();
+        let signer = PairSigner::new(signer.pair());
         match self.command {
             Cmd::Balances(balances) => balances.run(self.url, signer).await?,
             Cmd::Session(session) => session.run(self.url, signer).await?,

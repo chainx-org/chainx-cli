@@ -13,7 +13,7 @@ use crate::{
     primitives::*,
     runtime::ChainXRuntime,
     utils::{build_client, ChainXClient, Sr25519Signer},
-    xpallet::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
+    xpallets::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
 };
 
 #[derive(Debug, StructOpt)]
