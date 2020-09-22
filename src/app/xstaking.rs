@@ -1,13 +1,17 @@
-use chainx_runtime::{AccountId, Balance};
+use anyhow::Result;
+use structopt::StructOpt;
 
-use crate::utils::{build_client, parse_account, Sr25519Signer};
-use crate::xpallets::xstaking::{
-    BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
-    UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
+use crate::{
+    primitives::{AccountId, Balance},
+    utils::{build_client, parse_account, Sr25519Signer},
+    xpallet::xstaking::{
+        BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
+        UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
+    },
 };
 
 /// XStaking
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum XStaking {
     /// Register as a validator.
     #[structopt(name = "register")]
@@ -55,7 +59,7 @@ pub enum XStaking {
     Storage(Storage),
 }
 
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum Storage {
     #[structopt(name = "validators")]
     Validators {
@@ -65,11 +69,7 @@ pub enum Storage {
 }
 
 impl XStaking {
-    pub async fn run(
-        self,
-        url: String,
-        signer: Sr25519Signer,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {

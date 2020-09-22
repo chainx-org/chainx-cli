@@ -1,17 +1,17 @@
 mod app;
+mod primitives;
 mod runtime;
 mod utils;
-mod xpallets;
+mod xpallet;
 
-use app::App;
-use structopt::StructOpt;
+use self::app::App;
 
 #[async_std::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
-    let chainx_cli = App::from_args();
-    chainx_cli.run().await?;
+    let cli = App::init();
+    cli.run().await?;
 
     Ok(())
 }

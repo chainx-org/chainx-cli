@@ -1,4 +1,3 @@
-use chainx_runtime::AssetId;
 use codec::Encode;
 use substrate_subxt::{
     balances::{Balances, BalancesEventsDecoder},
@@ -6,6 +5,8 @@ use substrate_subxt::{
     system::{System, SystemEventsDecoder},
     Call,
 };
+
+use crate::primitives::AssetId;
 
 #[module]
 pub trait XAssets: Balances + System {}

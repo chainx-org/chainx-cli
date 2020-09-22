@@ -1,11 +1,13 @@
-use chainx_runtime::AssetId;
+use std::marker::PhantomData;
+
 use codec::Encode;
-use core::marker::PhantomData;
 use substrate_subxt::{
     module,
     system::{System, SystemEventsDecoder},
     Call,
 };
+
+use crate::primitives::AssetId;
 
 #[module]
 pub trait XMiningAsset: System {}

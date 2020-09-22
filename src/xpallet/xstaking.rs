@@ -1,12 +1,14 @@
-use chainx_runtime::BlockNumber;
+use std::marker::PhantomData;
+
 use codec::Encode;
-use core::marker::PhantomData;
 use substrate_subxt::{
     balances::{Balances, BalancesEventsDecoder},
     module,
     system::{System, SystemEventsDecoder},
     Call, Store,
 };
+
+use crate::primitives::BlockNumber;
 
 #[module]
 pub trait XStaking: Balances + System {}

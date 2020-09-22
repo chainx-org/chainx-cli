@@ -1,16 +1,22 @@
-use core::marker::PhantomData;
-use std::path::PathBuf;
+use std::{marker::PhantomData, path::PathBuf};
 
-use substrate_subxt::sudo::{SudoCallExt, SudoUncheckedWeightCallExt};
-use substrate_subxt::system::{SetCodeCall, SetCodeWithoutChecksCall};
-use substrate_subxt::Encoded;
+use anyhow::Result;
+use structopt::StructOpt;
+use substrate_subxt::{
+    sudo::{SudoCallExt, SudoUncheckedWeightCallExt},
+    system::{SetCodeCall, SetCodeWithoutChecksCall},
+    Encoded,
+};
 
-use super::system::read_code;
-use crate::runtime::ChainXRuntime;
-use crate::utils::{build_client, parse_account, Sr25519Signer};
-use crate::xpallets::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall};
+use crate::{
+    app::system::read_code,
+    primitives::*,
+    runtime::ChainXRuntime,
+    utils::{build_client, ChainXClient, Sr25519Signer},
+    xpallet::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
+};
 
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum Sudo {
     #[structopt(name = "sudo")]
     Sudo(Calls),
@@ -19,7 +25,7 @@ pub enum Sudo {
     SudoUncheckedWeight(Calls),
 }
 
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum Calls {
     #[structopt(name = "system")]
     System(System),
@@ -28,7 +34,7 @@ pub enum Calls {
     XStaking(XStaking),
 }
 
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum XStaking {
     SetValidatorCount {
         #[structopt(index = 1, long)]
@@ -36,11 +42,11 @@ pub enum XStaking {
     },
     SetSessionsPerEra {
         #[structopt(index = 1, long)]
-        new: chainx_runtime::BlockNumber,
+        new: BlockNumber,
     },
 }
 
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum System {
     SetCode {
         #[structopt(index = 1, long, parse(from_os_str))]
@@ -55,10 +61,7 @@ pub enum System {
 }
 
 impl Calls {
-    pub fn as_encoded(
-        self,
-        client: &crate::utils::ChainXClient,
-    ) -> Result<Encoded, Box<dyn std::error::Error>> {
+    pub fn as_encoded(&self, client: &ChainXClient) -> Result<Encoded> {
         match self {
             Self::System(system) => match system {
                 System::SetCode { code } => {
@@ -83,14 +86,14 @@ impl Calls {
                     println!("sudo XStaking::SetValidatorCount:");
                     Ok(client.encode(SetValidatorCountCall::<ChainXRuntime> {
                         _runtime: PhantomData,
-                        new,
+                        new: *new,
                     })?)
                 }
                 XStaking::SetSessionsPerEra { new } => {
                     println!("sudo XStaking::SetSessionsPerEra:");
                     Ok(client.encode(SetSessionsPerEraCall::<ChainXRuntime> {
                         _runtime: PhantomData,
-                        new,
+                        new: *new,
                     })?)
                 }
             },
@@ -99,11 +102,7 @@ impl Calls {
 }
 
 impl Sudo {
-    pub async fn run(
-        self,
-        url: String,
-        signer: Sr25519Signer,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
         let client = build_client(url).await?;
 
         println!("Sudo");

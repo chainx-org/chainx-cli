@@ -1,12 +1,17 @@
-use substrate_subxt::balances::{TransferCallExt, TransferEventExt};
-use substrate_subxt::system::AccountStoreExt;
+use anyhow::Result;
+use structopt::StructOpt;
+use substrate_subxt::{
+    balances::{TransferCallExt, TransferEventExt},
+    system::AccountStoreExt,
+};
 
-use chainx_runtime::AccountId;
-
-use crate::utils::{build_client, parse_account, Sr25519Signer};
+use crate::{
+    primitives::AccountId,
+    utils::{build_client, parse_account, Sr25519Signer},
+};
 
 /// Balances
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum Balances {
     /// Transfer some balances from signer to another account.
     #[structopt(name = "transfer")]
@@ -25,11 +30,7 @@ pub enum Balances {
 }
 
 impl Balances {
-    pub async fn run(
-        self,
-        url: String,
-        signer: Sr25519Signer,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {

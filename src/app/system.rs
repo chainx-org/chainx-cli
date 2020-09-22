@@ -2,14 +2,17 @@ use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
+use anyhow::Result;
+use structopt::StructOpt;
 use substrate_subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
 
-use chainx_runtime::AccountId;
-
-use crate::utils::{build_client, parse_account, Sr25519Signer};
+use crate::{
+    primitives::AccountId,
+    utils::{build_client, parse_account, Sr25519Signer},
+};
 
 /// System
-#[derive(structopt::StructOpt, Debug)]
+#[derive(Debug, StructOpt)]
 pub enum System {
     /// Get the account information.
     AccountInfo {
@@ -25,7 +28,7 @@ pub enum System {
     },
 }
 
-pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>> {
     let mut file = File::open(code_path)?;
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
@@ -33,11 +36,7 @@ pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>, Box<dyn std::e
 }
 
 impl System {
-    pub async fn run(
-        self,
-        url: String,
-        signer: Sr25519Signer,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {
