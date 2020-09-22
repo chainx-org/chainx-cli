@@ -498,11 +498,17 @@ dependencies = [
  "async-std",
  "env_logger",
  "hex",
+ "pallet-im-online",
  "pallet-indices",
  "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-authority-discovery",
+ "sp-consensus-aura",
  "sp-core",
+ "sp-finality-grandpa",
  "sp-keyring",
  "sp-runtime",
+ "sp-std",
  "structopt",
  "substrate-subxt",
 ]
@@ -3257,6 +3263,21 @@ dependencies = [
  "sp-version",
  "substrate-prometheus-endpoint",
  "wasm-timer",
+]
+
+[[package]]
+name = "sp-consensus-aura"
+version = "0.8.0-rc6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11e0d52c37986b11cf4babebf254ea334a7627934ee461c2daf5709bb8530514"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+ "sp-timestamp",
 ]
 
 [[package]]
