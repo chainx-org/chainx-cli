@@ -4,10 +4,13 @@ pub mod sudo;
 pub mod system;
 pub mod xstaking;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use sp_core::{crypto::Ss58AddressFormat, Pair};
 use sp_keyring::AccountKeyring;
 use structopt::{clap::arg_enum, StructOpt};
 use substrate_subxt::PairSigner;
+
+use crate::utils::Sr25519Signer;
 
 #[derive(StructOpt, Debug)]
 pub enum Cmd {
@@ -22,6 +25,9 @@ pub enum Cmd {
 
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
+
+    #[structopt(name = "inspect-key")]
+    InspectKey,
 }
 
 arg_enum! {
@@ -56,14 +62,31 @@ impl Into<AccountKeyring> for BuiltinAccounts {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chainx-cli", no_version)]
 pub struct App {
+    /// Builtin test accounts.
     #[structopt(long, possible_values = &BuiltinAccounts::variants(), case_insensitive = true)]
     pub signer: Option<BuiltinAccounts>,
+
+    /// A Key URI used as a signer.
+    ///
+    /// Maybe a secret seed, secret URI(with derivation paths and password), SS58 or public URI.
+    /// You can also use an environment variable URI=[URI] for this purpose.
+    #[structopt(long)]
+    pub uri: Option<String>,
 
     #[structopt(long, default_value = "ws://127.0.0.1:9944")]
     pub url: String,
 
+    #[structopt(long)]
+    pub network: Option<Ss58AddressFormat>,
+
     #[structopt(subcommand)]
     pub command: Cmd,
+}
+
+fn as_sr25519_signer(uri: &str) -> Result<Sr25519Signer> {
+    sp_core::sr25519::Pair::from_phrase(&uri, None)
+        .map(|(pair, _seed)| PairSigner::new(pair))
+        .map_err(|err| anyhow!("Failed to generate sr25519 Pair from uri: {:?}", err))
 }
 
 impl App {
@@ -72,16 +95,47 @@ impl App {
     }
 
     pub async fn run(self) -> Result<()> {
-        let signer = self.signer.unwrap_or_else(|| BuiltinAccounts::Alice);
-        let signer: AccountKeyring = signer.into();
-        let signer = PairSigner::new(signer.pair());
+        let signer = if let Some(ref uri) = self.get_uri() {
+            as_sr25519_signer(uri)?
+        } else {
+            self.builtin_signer()
+        };
         match self.command {
             Cmd::Balances(balances) => balances.run(self.url, signer).await?,
             Cmd::Session(session) => session.run(self.url, signer).await?,
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
+            Cmd::InspectKey => {
+                if let Some(ref uri) = self.get_uri() {
+                    sc_cli::utils::print_from_uri::<sp_core::sr25519::Pair>(
+                        uri,
+                        None,
+                        self.network,
+                        sc_cli::OutputType::Text,
+                    );
+                }
+            }
         }
         Ok(())
+    }
+
+    fn get_uri(&self) -> Option<String> {
+        if let Some(ref uri) = self.uri {
+            Some(uri.into())
+        } else if let Ok(ref uri) = std::env::var("URI") {
+            Some(uri.into())
+        } else {
+            None
+        }
+    }
+
+    fn builtin_signer(&self) -> Sr25519Signer {
+        let signer = self
+            .signer
+            .clone()
+            .unwrap_or_else(|| BuiltinAccounts::Alice);
+        let signer: AccountKeyring = signer.into();
+        PairSigner::new(signer.pair())
     }
 }
