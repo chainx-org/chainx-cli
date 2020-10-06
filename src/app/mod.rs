@@ -95,9 +95,8 @@ impl App {
                 let genesis_hash = client.genesis();
                 println!("genesis hash:{:?}", genesis_hash);
                 let rpc = Rpc::new(&self.url).await?;
-                // System Account + hash = 96 chars
                 let accounts = rpc.get_accounts(Some(*genesis_hash)).await?;
-                println!("{:#?}", accounts);
+                println!("{:#?}", rpc.get_accounts_info(Some(*genesis_hash)).await?);
             }
         }
         Ok(())

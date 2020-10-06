@@ -2,6 +2,7 @@ mod app;
 mod primitives;
 mod rpc;
 mod runtime;
+mod types;
 mod utils;
 mod xpallets;
 
