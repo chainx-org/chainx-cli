@@ -25,5 +25,7 @@ sp-std = "2.0.0-rc6"
 pallet-indices = "2.0.0-rc6"
 pallet-im-online = "2.0.0-rc6"
 
+xpallet-mining-staking = { git = "https://github.com/chainx-org/ChainX", branch = "develop-2.0" }
+
 # remove this when a new version is released
 substrate-subxt = { git = "https://github.com/paritytech/substrate-subxt" }

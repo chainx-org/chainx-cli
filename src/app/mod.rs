@@ -25,7 +25,7 @@ pub enum Cmd {
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
 
-    /// Verify the genesis is correct with respect to the 1.0 exported state.
+    /// Verify the 2.0 genesis is correct against the state exported from 1.0.
     #[structopt(name = "verify")]
     Verify,
 }
@@ -97,6 +97,11 @@ impl App {
                 let rpc = Rpc::new(&self.url).await?;
                 let accounts = rpc.get_accounts(Some(*genesis_hash)).await?;
                 println!("{:#?}", rpc.get_accounts_info(Some(*genesis_hash)).await?);
+                let nominations = rpc.get_nominations(Some(*genesis_hash)).await?;
+                println!(
+                    "{:#?}",
+                    rpc.get_validator_ledgers(Some(*genesis_hash)).await?
+                );
             }
         }
         Ok(())

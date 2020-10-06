@@ -61,9 +61,12 @@ pub fn as_account_id_ed25519(pubkey_str: &str) -> Result<Ed25519Public> {
 #[test]
 fn test_account() {
     use sp_core::ed25519::Public;
+    use sp_core::twox_128;
 
     let account = Public::from_raw(
         to_u8_32("0x33bcfcfbed81b3f8bc2a6041cd62f969cd83cdeb7118a05d06fb5e3d2c27dfff").unwrap(),
     );
     println!("{:?}", account);
+
+    println!("twox_128: {:?}", hex::encode(twox_128(b"System")));
 }

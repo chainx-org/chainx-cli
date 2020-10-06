@@ -512,6 +512,22 @@ dependencies = [
  "sp-std",
  "structopt",
  "substrate-subxt",
+ "xpallet-mining-staking",
+]
+
+[[package]]
+name = "chainx-primitives"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "xpallet-support",
 ]
 
 [[package]]
@@ -2047,6 +2063,21 @@ dependencies = [
  "parity-scale-codec",
  "sp-authorship",
  "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-balances"
+version = "2.0.0-rc6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec78c836f1481626270edfa445c612ba8e3aa6601f418f31a9aa815ae3ab6584"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
  "sp-runtime",
  "sp-std",
 ]
@@ -4473,6 +4504,75 @@ checksum = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "xp-mining-common"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "chainx-primitives",
+ "sp-arithmetic",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xp-mining-staking"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "chainx-primitives",
+ "sp-runtime",
+ "sp-std",
+ "xp-mining-common",
+]
+
+[[package]]
+name = "xp-runtime"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xpallet-mining-staking"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-session",
+ "parity-scale-codec",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+ "xp-mining-common",
+ "xp-mining-staking",
+ "xp-runtime",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-support"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#35d1fdf4fccbfd9aa21d54433d33ffd3eba81f7c"
+dependencies = [
+ "frame-support",
+ "hex",
+ "parity-scale-codec",
+ "serde",
+ "sp-std",
 ]
 
 [[package]]
