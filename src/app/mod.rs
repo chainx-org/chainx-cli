@@ -9,6 +9,8 @@ use sp_keyring::AccountKeyring;
 use structopt::{clap::arg_enum, StructOpt};
 use substrate_subxt::PairSigner;
 
+use crate::rpc::Rpc;
+
 #[derive(StructOpt, Debug)]
 pub enum Cmd {
     #[structopt(name = "balances")]
@@ -22,6 +24,10 @@ pub enum Cmd {
 
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
+
+    /// Verify the genesis is correct with respect to the 1.0 exported state.
+    #[structopt(name = "verify")]
+    Verify,
 }
 
 arg_enum! {
@@ -72,7 +78,10 @@ impl App {
     }
 
     pub async fn run(self) -> Result<()> {
-        let signer = self.signer.unwrap_or_else(|| BuiltinAccounts::Alice);
+        let signer = self
+            .signer
+            .clone()
+            .unwrap_or_else(|| BuiltinAccounts::Alice);
         let signer: AccountKeyring = signer.into();
         let signer = PairSigner::new(signer.pair());
         match self.command {
@@ -81,6 +90,15 @@ impl App {
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
+            Cmd::Verify => {
+                let client = crate::utils::build_client(self.url.clone()).await?;
+                let genesis_hash = client.genesis();
+                println!("genesis hash:{:?}", genesis_hash);
+                let rpc = Rpc::new(&self.url).await?;
+                // System Account + hash = 96 chars
+                let accounts = rpc.get_accounts(Some(*genesis_hash)).await?;
+                println!("{:#?}", accounts);
+            }
         }
         Ok(())
     }
