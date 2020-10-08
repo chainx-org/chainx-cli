@@ -7,7 +7,7 @@ pub mod xstaking;
 use anyhow::Result;
 use sp_keyring::AccountKeyring;
 use structopt::{clap::arg_enum, StructOpt};
-use substrate_subxt::PairSigner;
+use subxt::PairSigner;
 
 #[derive(StructOpt, Debug)]
 pub enum Cmd {
