@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use codec::Encode;
-use substrate_subxt::{
+use subxt::{
     module,
     system::{System, SystemEventsDecoder},
     Call,

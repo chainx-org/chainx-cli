@@ -1,6 +1,6 @@
 use anyhow::Result;
 use structopt::StructOpt;
-use substrate_subxt::{
+use subxt::{
     balances::{TransferCallExt, TransferEventExt},
     system::AccountStoreExt,
 };

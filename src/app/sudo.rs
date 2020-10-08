@@ -2,7 +2,7 @@ use std::{marker::PhantomData, path::PathBuf};
 
 use anyhow::Result;
 use structopt::StructOpt;
-use substrate_subxt::{
+use subxt::{
     sudo::{SudoCallExt, SudoUncheckedWeightCallExt},
     system::{SetCodeCall, SetCodeWithoutChecksCall},
     Encoded,
