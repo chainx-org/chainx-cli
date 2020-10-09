@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use sp_keyring::AccountKeyring;
-use substrate_subxt::{
+use subxt::{
     sp_core::{crypto::Ss58Codec, sr25519},
     Client, ClientBuilder, PairSigner,
 };

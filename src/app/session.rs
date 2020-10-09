@@ -1,5 +1,5 @@
 use anyhow::Result;
-use substrate_subxt::session::ValidatorsStoreExt;
+use subxt::session::ValidatorsStoreExt;
 
 use crate::utils::{build_client, Sr25519Signer};
 

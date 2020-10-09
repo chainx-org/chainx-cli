@@ -8,7 +8,7 @@ use anyhow::{anyhow, Result};
 use sp_core::{crypto::Ss58AddressFormat, Pair};
 use sp_keyring::AccountKeyring;
 use structopt::{clap::arg_enum, StructOpt};
-use substrate_subxt::PairSigner;
+use subxt::PairSigner;
 
 use crate::utils::Sr25519Signer;
 
