@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use structopt::StructOpt;
-use substrate_subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
+use subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
 
 use crate::{
     primitives::AccountId,

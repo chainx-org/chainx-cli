@@ -1,6 +1,6 @@
 [package]
 name = "chainx-cli"
-version = "2.0.0-rc6"
+version = "2.0.0-alpha.0"
 authors = ["The ChainX Authors"]
 edition = "2018"
 
@@ -12,20 +12,20 @@ env_logger = "0.7.1"
 jsonrpsee = { version = "0.1.0", features = ["ws"] }
 hex = "0.4"
 structopt = "0.3"
+subxt = { package = "substrate-subxt", version = "0.13" }
 
-sp-application-crypto = "2.0.0-rc6"
-sp-authority-discovery = "2.0.0-rc6"
-sp-consensus-aura = "0.8.0-rc6"
-sp-core = "2.0.0-rc6"
-sp-finality-grandpa = "2.0.0-rc6"
-sp-keyring = "2.0.0-rc6"
-sp-runtime = "2.0.0-rc6"
-sp-std = "2.0.0-rc6"
+sc-cli = "0.8.0"
 
-pallet-indices = "2.0.0-rc6"
-pallet-im-online = "2.0.0-rc6"
+sp-application-crypto = "2.0.0"
+sp-authority-discovery = "2.0.0"
+sp-consensus-aura = "0.8.0"
+sp-core = "2.0.0"
+sp-finality-grandpa = "2.0.0"
+sp-keyring = "2.0.0"
+sp-runtime = "2.0.0"
+sp-std = "2.0.0"
+
+pallet-indices = "2.0.0"
+pallet-im-online = "2.0.0"
 
 xpallet-mining-staking = { git = "https://github.com/chainx-org/ChainX", branch = "develop-2.0" }
-
-# remove this when a new version is released
-substrate-subxt = { git = "https://github.com/paritytech/substrate-subxt" }

@@ -1,7 +1,6 @@
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-use sp_std::prelude::*;
-use substrate_subxt::{
+use subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
     session::Session,
