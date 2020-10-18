@@ -24,7 +24,7 @@ pub struct AccountData<Balance> {
     pub fee_frozen: Balance,
 }
 
-pub type RefCount = u8;
+pub type RefCount = u32;
 
 /// Information of an account.
 #[derive(Clone, Eq, PartialEq, Default, Debug, Encode, Decode)]
