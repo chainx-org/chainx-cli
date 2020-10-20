@@ -675,10 +675,12 @@ dependencies = [
  "env_logger",
  "hex",
  "jsonrpsee",
+ "log",
  "pallet-im-online",
  "pallet-indices",
  "parity-scale-codec",
  "sc-cli",
+ "serde_json",
  "sp-application-crypto",
  "sp-authority-discovery",
  "sp-consensus-aura",
@@ -689,13 +691,14 @@ dependencies = [
  "sp-std",
  "structopt",
  "substrate-subxt",
+ "xp-genesis-builder",
  "xpallet-mining-staking",
 ]
 
 [[package]]
 name = "chainx-primitives"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -6657,7 +6660,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfd5b7557925ce778ff9b9ef90e3ade34c524b5ff10e239c69a42d546d2af56"
 dependencies = [
- "rand 0.7.3",
+ "rand 0.3.23",
 ]
 
 [[package]]
@@ -7097,9 +7100,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "xp-genesis-builder"
+version = "2.0.0-alpha.0"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
+dependencies = [
+ "chainx-primitives",
+ "serde",
+ "xpallet-support",
+]
+
+[[package]]
 name = "xp-mining-common"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "chainx-primitives",
  "sp-arithmetic",
@@ -7110,7 +7123,7 @@ dependencies = [
 [[package]]
 name = "xp-mining-staking"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "chainx-primitives",
  "sp-runtime",
@@ -7121,7 +7134,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -7133,7 +7146,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-staking"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -7147,6 +7160,7 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-std",
+ "xp-genesis-builder",
  "xp-mining-common",
  "xp-mining-staking",
  "xp-runtime",
@@ -7156,7 +7170,7 @@ dependencies = [
 [[package]]
 name = "xpallet-support"
 version = "2.0.0-alpha.0"
-source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#7823b96e2b5d1ce58e23bc3f299ab2d28ef19a33"
+source = "git+https://github.com/chainx-org/ChainX?branch=develop-2.0#535bfd57427356e7aff250bdd7c12a17f723b60d"
 dependencies = [
  "frame-support",
  "hex",

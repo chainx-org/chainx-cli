@@ -2,6 +2,7 @@ pub mod balances;
 pub mod session;
 pub mod sudo;
 pub mod system;
+pub mod verifier;
 pub mod xstaking;
 
 use anyhow::{anyhow, Result};
@@ -30,7 +31,7 @@ pub enum Cmd {
 
     /// Verify the 2.0 genesis is correct against the state exported from 1.0.
     #[structopt(name = "verify")]
-    Verify,
+    Verify(verifier::Verifier),
     #[structopt(name = "inspect-key")]
     InspectKey,
 }
@@ -111,19 +112,7 @@ impl App {
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
-            Cmd::Verify => {
-                let client = crate::utils::build_client(self.url.clone()).await?;
-                let genesis_hash = client.genesis();
-                println!("genesis hash:{:?}", genesis_hash);
-                let rpc = Rpc::new(&self.url).await?;
-                let accounts = rpc.get_accounts(Some(*genesis_hash)).await?;
-                println!("{:#?}", rpc.get_accounts_info(Some(*genesis_hash)).await?);
-                let nominations = rpc.get_nominations(Some(*genesis_hash)).await?;
-                println!(
-                    "{:#?}",
-                    rpc.get_validator_ledgers(Some(*genesis_hash)).await?
-                );
-            }
+            Cmd::Verify(verifier) => verifier.run(self.url).await?,
             Cmd::InspectKey => {
                 if let Some(ref uri) = self.get_uri() {
                     sc_cli::utils::print_from_uri::<sp_core::sr25519::Pair>(

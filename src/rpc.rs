@@ -67,7 +67,6 @@ impl Rpc {
             .into_iter()
             .map(|x| format!("0x{}", &x[96..]))
             .collect::<Vec<_>>();
-        println!("{:#?}", accounts);
         Ok(accounts)
     }
 
@@ -83,6 +82,13 @@ impl Rpc {
         let prefix = storage_prefix_for("System", "Account");
         let storage_key = StorageKey(prefix);
         let data = self.get_pairs(storage_key, hash).await?;
+        let ENDOWED = vec![
+            "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+            "8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48",
+            "be5ddb1579b72e84524fc29e78609e3caf42e85aa118ebfe0b0ad404b5bdd25f",
+            "fe65717dad0447d715f660a0a58411de509b42e6efb8375f562f58a554d5860e",
+        ];
+        let ENDOWED = vec![];
         let result = data
             .into_iter()
             .filter_map(|(key, value)| {
@@ -91,9 +97,15 @@ impl Rpc {
                         .map_err(|e| anyhow!("failed to decode {:?}, error:{:?}", value, e));
                 decoded_account_info.ok().and_then(|account_info| {
                     let pubkey_str = &hex::encode(&key.0)[96..];
-                    as_account_id_ed25519(pubkey_str)
-                        .ok()
-                        .map(|account_id| (account_id, account_info))
+                    if ENDOWED.contains(&pubkey_str) {
+                        println!("----- Endowned account:{:#?}", pubkey_str);
+                        None
+                    } else {
+                        // FIXME: Alice is sr25519 account
+                        as_account_id_ed25519(pubkey_str)
+                            .ok()
+                            .map(|account_id| (account_id, account_info))
+                    }
                 })
             })
             .collect::<Vec<_>>();
