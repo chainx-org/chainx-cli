@@ -2,12 +2,15 @@ use anyhow::Result;
 use structopt::StructOpt;
 
 use crate::{
-    primitives::{AccountId, Balance},
-    utils::{build_client, parse_account, Sr25519Signer},
-    xpallets::xstaking::{
-        BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
-        UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
+    runtime::{
+        primitives::{AccountId, Balance},
+        xpallets::xstaking::{
+            BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
+            UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
+        },
+        ChainXSigner,
     },
+    utils::{build_client, parse_account},
 };
 
 /// XStaking
@@ -69,7 +72,7 @@ pub enum Storage {
 }
 
 impl XStaking {
-    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
+    pub async fn run(self, url: String, signer: ChainXSigner) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {

@@ -1,8 +1,6 @@
 mod app;
-mod primitives;
 mod runtime;
 mod utils;
-mod xpallets;
 
 use self::app::App;
 

@@ -7,7 +7,7 @@ use subxt::{
     Call,
 };
 
-use crate::primitives::AssetId;
+use crate::runtime::primitives::AssetId;
 
 #[module]
 pub trait XMiningAsset: System {}

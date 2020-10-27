@@ -1,8 +1,9 @@
 use anyhow::Result;
 use subxt::session::ValidatorsStoreExt;
 
-use crate::utils::{build_client, Sr25519Signer};
+use crate::{runtime::ChainXSigner, utils::build_client};
 
+/// Session
 #[derive(structopt::StructOpt, Debug)]
 pub enum Session {
     #[structopt(name = "set-keys")]
@@ -15,7 +16,7 @@ pub enum Session {
 }
 
 impl Session {
-    pub async fn run(self, url: String, _signer: Sr25519Signer) -> Result<()> {
+    pub async fn run(self, url: String, _signer: ChainXSigner) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {
