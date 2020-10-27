@@ -17,7 +17,7 @@ sc-cli = "0.8.0"
 
 sp-application-crypto = "2.0.0"
 sp-authority-discovery = "2.0.0"
-sp-consensus-aura = "0.8.0"
+sp-consensus-babe = "0.8.0"
 sp-core = "2.0.0"
 sp-finality-grandpa = "2.0.0"
 sp-keyring = "2.0.0"

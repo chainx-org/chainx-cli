@@ -44,9 +44,9 @@ impl Balances for ChainXRuntime {
 
 /// BABE marker struct
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Aura;
-impl sp_runtime::BoundToRuntimeAppPublic for Aura {
-    type Public = sp_consensus_aura::sr25519::AuthorityId;
+pub struct Babe;
+impl sp_runtime::BoundToRuntimeAppPublic for Babe {
+    type Public = sp_consensus_babe::AuthorityId;
 }
 
 /// ImOnline marker struct
@@ -74,7 +74,7 @@ impl_opaque_keys! {
     /// Substrate base runtime keys
     pub struct BasicSessionKeys {
         /// BABE session key
-        pub aura: Aura,
+        pub babe: Babe,
         /// GRANDPA session key
         pub grandpa: Grandpa,
         /// ImOnline session key
