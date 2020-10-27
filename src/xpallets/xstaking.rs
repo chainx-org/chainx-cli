@@ -21,6 +21,7 @@ pub struct RegisterCall<T: XStaking> {
     /// Validator nickname
     pub validator_nickname: Vec<u8>,
     /// Initial bond to this validator.
+    #[codec(compact)]
     pub initial_bond: <T as Balances>::Balance,
 }
 
