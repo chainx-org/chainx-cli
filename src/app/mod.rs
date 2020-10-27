@@ -5,12 +5,12 @@ pub mod system;
 pub mod xstaking;
 
 use anyhow::{anyhow, Result};
-use sp_core::{crypto::Ss58AddressFormat, Pair};
+use sp_core::Pair;
 use sp_keyring::AccountKeyring;
 use structopt::{clap::arg_enum, StructOpt};
 use subxt::PairSigner;
 
-use crate::utils::Sr25519Signer;
+use crate::runtime::ChainXSigner;
 
 #[derive(StructOpt, Debug)]
 pub enum Cmd {
@@ -26,6 +26,7 @@ pub enum Cmd {
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
 
+    #[cfg(feature = "sc-cli")]
     #[structopt(name = "inspect-key")]
     InspectKey,
 }
@@ -73,17 +74,20 @@ pub struct App {
     #[structopt(long)]
     pub uri: Option<String>,
 
-    #[structopt(long, default_value = "ws://127.0.0.1:9944")]
+    /// The websocket url of ChainX node.
+    #[structopt(long, default_value = "ws://127.0.0.1:8087")]
     pub url: String,
 
+    #[cfg(feature = "sc-cli")]
+    /// The network type ('substrate' or `chainx`)
     #[structopt(long)]
-    pub network: Option<Ss58AddressFormat>,
+    pub network: Option<sp_core::crypto::Ss58AddressFormat>,
 
     #[structopt(subcommand)]
     pub command: Cmd,
 }
 
-fn as_sr25519_signer(uri: &str) -> Result<Sr25519Signer> {
+fn as_sr25519_signer(uri: &str) -> Result<ChainXSigner> {
     sp_core::sr25519::Pair::from_phrase(&uri, None)
         .map(|(pair, _seed)| PairSigner::new(pair))
         .map_err(|err| anyhow!("Failed to generate sr25519 Pair from uri: {:?}", err))
@@ -106,6 +110,7 @@ impl App {
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
+            #[cfg(feature = "sc-cli")]
             Cmd::InspectKey => {
                 if let Some(ref uri) = self.get_uri() {
                     sc_cli::utils::print_from_uri::<sp_core::sr25519::Pair>(
@@ -130,7 +135,7 @@ impl App {
         }
     }
 
-    fn builtin_signer(&self) -> Sr25519Signer {
+    fn builtin_signer(&self) -> ChainXSigner {
         let signer = self
             .signer
             .clone()

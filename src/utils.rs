@@ -1,15 +1,9 @@
 use anyhow::{anyhow, Result};
+use sp_core::crypto::Ss58Codec;
 use sp_keyring::AccountKeyring;
-use subxt::{
-    sp_core::{crypto::Ss58Codec, sr25519},
-    Client, ClientBuilder, PairSigner,
-};
+use subxt::ClientBuilder;
 
-use crate::{primitives::AccountId, runtime::ChainXRuntime};
-
-pub type Sr25519Signer = PairSigner<ChainXRuntime, sr25519::Pair>;
-
-pub type ChainXClient = Client<ChainXRuntime>;
+use crate::runtime::{primitives::AccountId, ChainXClient, ChainXRuntime};
 
 /// Parses AccountId from String, also supports passing the test accounts directly.
 pub fn parse_account(address: &str) -> Result<AccountId> {

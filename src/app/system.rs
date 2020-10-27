@@ -7,8 +7,8 @@ use structopt::StructOpt;
 use subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
 
 use crate::{
-    primitives::AccountId,
-    utils::{build_client, parse_account, Sr25519Signer},
+    runtime::{primitives::AccountId, ChainXSigner},
+    utils::{build_client, parse_account},
 };
 
 /// System
@@ -36,7 +36,7 @@ pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>> {
 }
 
 impl System {
-    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
+    pub async fn run(self, url: String, signer: ChainXSigner) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {

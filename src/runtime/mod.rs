@@ -1,16 +1,22 @@
+pub mod primitives;
+pub mod xpallets;
+
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_consensus_babe::AuthorityId as BabeId;
+use sp_core::sr25519;
+use sp_finality_grandpa::AuthorityId as GrandpaId;
+use sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic};
 use subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
     session::Session,
-    sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic},
     sudo::Sudo,
     system::System,
-    Runtime,
+    Client, PairSigner, Runtime,
 };
 
-use crate::{
+use self::{
     primitives::*,
     xpallets::{xassets::XAssets, xmining_asset::XMiningAsset, xstaking::XStaking},
 };
@@ -39,14 +45,21 @@ impl System for ChainXRuntime {
 impl Sudo for ChainXRuntime {}
 
 impl Balances for ChainXRuntime {
-    type Balance = u128;
+    type Balance = Balance;
 }
 
 /// BABE marker struct
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Babe;
 impl sp_runtime::BoundToRuntimeAppPublic for Babe {
-    type Public = sp_consensus_babe::AuthorityId;
+    type Public = BabeId;
+}
+
+/// GRANDPA marker struct
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Grandpa;
+impl sp_runtime::BoundToRuntimeAppPublic for Grandpa {
+    type Public = GrandpaId;
 }
 
 /// ImOnline marker struct
@@ -54,13 +67,6 @@ impl sp_runtime::BoundToRuntimeAppPublic for Babe {
 pub struct ImOnline;
 impl sp_runtime::BoundToRuntimeAppPublic for ImOnline {
     type Public = ImOnlineId;
-}
-
-/// GRANDPA marker struct
-#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Grandpa;
-impl sp_runtime::BoundToRuntimeAppPublic for Grandpa {
-    type Public = sp_finality_grandpa::AuthorityId;
 }
 
 /// Authority discovery marker struct
@@ -92,3 +98,12 @@ impl Session for ChainXRuntime {
 impl XAssets for ChainXRuntime {}
 impl XMiningAsset for ChainXRuntime {}
 impl XStaking for ChainXRuntime {}
+
+/// ChainX `Client` for ChainX runtime.
+pub type ChainXClient = Client<ChainXRuntime>;
+
+/// ChainX `Pair` for ChainX runtime.
+pub type ChainXPair = sr25519::Pair;
+
+/// ChainX `PairSigner` for ChainX runtime.
+pub type ChainXSigner = PairSigner<ChainXRuntime, ChainXPair>;

@@ -10,12 +10,15 @@ use subxt::{
 
 use crate::{
     app::system::read_code,
-    primitives::*,
-    runtime::ChainXRuntime,
-    utils::{build_client, ChainXClient, Sr25519Signer},
-    xpallets::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
+    runtime::{
+        primitives::*,
+        xpallets::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
+        ChainXClient, ChainXRuntime, ChainXSigner,
+    },
+    utils::build_client,
 };
 
+/// Sudo
 #[derive(Debug, StructOpt)]
 pub enum Sudo {
     #[structopt(name = "sudo")]
@@ -102,7 +105,7 @@ impl Calls {
 }
 
 impl Sudo {
-    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
+    pub async fn run(self, url: String, signer: ChainXSigner) -> Result<()> {
         let client = build_client(url).await?;
 
         println!("Sudo");

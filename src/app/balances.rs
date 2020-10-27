@@ -6,8 +6,8 @@ use subxt::{
 };
 
 use crate::{
-    primitives::AccountId,
-    utils::{build_client, parse_account, Sr25519Signer},
+    runtime::{primitives::AccountId, ChainXSigner},
+    utils::{build_client, parse_account},
 };
 
 /// Balances
@@ -30,7 +30,7 @@ pub enum Balances {
 }
 
 impl Balances {
-    pub async fn run(self, url: String, signer: Sr25519Signer) -> Result<()> {
+    pub async fn run(self, url: String, signer: ChainXSigner) -> Result<()> {
         let client = build_client(url).await?;
 
         match self {

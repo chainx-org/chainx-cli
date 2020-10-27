@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use codec::Encode;
+use codec::{Decode, Encode};
 use subxt::{
     balances::{Balances, BalancesEventsDecoder},
     module,
@@ -8,7 +8,7 @@ use subxt::{
     Call, Store,
 };
 
-use crate::primitives::BlockNumber;
+use crate::runtime::primitives::BlockNumber;
 
 #[module]
 pub trait XStaking: Balances + System {}
@@ -90,12 +90,20 @@ pub struct SetSessionsPerEraCall<T: XStaking> {
     pub new: BlockNumber,
 }
 
+/// Account field of the `System` module.
+#[derive(Clone, Debug, Eq, PartialEq, Store, Encode)]
+pub struct ValidatorsStore<'a, T: System> {
+    #[store(returns = ValidatorProfile)]
+    /// Account to retrieve the `ValidatorProfile` for.
+    pub account_id: &'a T::AccountId,
+}
+
 pub type ReferralId = Vec<u8>;
 
 /// Profile of staking validator.
 ///
 /// These fields are static or updated less frequently.
-#[derive(PartialEq, Eq, Clone, Default, codec::Encode, codec::Decode)]
+#[derive(PartialEq, Eq, Clone, Default, Encode, Decode)]
 pub struct ValidatorProfile {
     /// Block number at which point it's registered on chain.
     pub registered_at: BlockNumber,
@@ -118,12 +126,4 @@ impl std::fmt::Debug for ValidatorProfile {
             .field("referral_id", &String::from_utf8_lossy(&self.referral_id))
             .finish()
     }
-}
-
-/// Account field of the `System` module.
-#[derive(Clone, Debug, Eq, PartialEq, Store, codec::Encode)]
-pub struct ValidatorsStore<'a, T: System> {
-    #[store(returns = ValidatorProfile)]
-    /// Account to retrieve the `ValidatorProfile` for.
-    pub account_id: &'a T::AccountId,
 }
