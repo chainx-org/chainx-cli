@@ -31,9 +31,9 @@ pub fn parse_account(address: &str) -> Result<AccountId> {
 }
 
 /// Builds a ChainX runtime specific client.
-pub async fn build_client(url: String) -> Result<ChainXClient> {
+pub async fn build_client<U: Into<String>>(url: U) -> Result<ChainXClient> {
     Ok(ClientBuilder::<ChainXRuntime>::new()
-        .set_url(&url)
+        .set_url(url)
         .build()
         .await?)
 }
