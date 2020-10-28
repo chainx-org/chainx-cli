@@ -1,4 +1,7 @@
-use std::marker::PhantomData;
+use std::{
+    fmt::{self, Debug},
+    marker::PhantomData,
+};
 
 use codec::{Decode, Encode};
 use subxt::{
@@ -8,10 +11,12 @@ use subxt::{
     Call, Store,
 };
 
-use crate::runtime::primitives::BlockNumber;
-
 #[module]
 pub trait XStaking: Balances + System {}
+
+// ============================================================================
+// Call
+// ============================================================================
 
 /// Execute a transaction with sudo permissions.
 #[derive(Clone, Debug, Eq, PartialEq, Call, Encode)]
@@ -87,24 +92,47 @@ pub struct SetSessionsPerEraCall<T: XStaking> {
     pub _runtime: PhantomData<T>,
     /// New ideal validator count.
     #[codec(compact)]
-    pub new: BlockNumber,
+    pub new: SessionIndex,
 }
 
-/// Account field of the `System` module.
+/// Simple index type with which we can count sessions.
+pub type SessionIndex = u32;
+
+// ============================================================================
+// Storage
+// ============================================================================
+
+/// Validators field of the `XStaking` module.
 #[derive(Clone, Debug, Eq, PartialEq, Store, Encode)]
-pub struct ValidatorsStore<'a, T: System> {
-    #[store(returns = ValidatorProfile)]
-    /// Account to retrieve the `ValidatorProfile` for.
+pub struct ValidatorsStore<'a, T: XStaking> {
+    #[store(returns = ValidatorProfile<T::BlockNumber>)]
     pub account_id: &'a T::AccountId,
 }
+
+/// ValidatorLedgers field of the `XStaking` module.
+#[derive(Clone, Debug, Eq, PartialEq, Store, Encode)]
+pub struct ValidatorLedgersStore<'a, T: XStaking> {
+    #[store(returns = ValidatorLedger<BalanceOf<T>, VoteWeight, T::BlockNumber>)]
+    pub account_id: &'a T::AccountId,
+}
+
+/// Nominations field of the `XStaking` module.
+#[derive(Clone, Debug, Eq, PartialEq, Store, Encode)]
+pub struct NominationsStore<'a, T: XStaking> {
+    #[store(returns = NominatorLedger<BalanceOf<T>, VoteWeight, T::BlockNumber>)]
+    pub nominator: &'a T::AccountId,
+    pub nominatee: &'a T::AccountId,
+}
+
+pub type BalanceOf<T> = <T as Balances>::Balance;
+
+pub type VoteWeight = u128;
 
 pub type ReferralId = Vec<u8>;
 
 /// Profile of staking validator.
-///
-/// These fields are static or updated less frequently.
 #[derive(PartialEq, Eq, Clone, Default, Encode, Decode)]
-pub struct ValidatorProfile {
+pub struct ValidatorProfile<BlockNumber> {
     /// Block number at which point it's registered on chain.
     pub registered_at: BlockNumber,
     /// Validator is chilled right now.
@@ -117,8 +145,8 @@ pub struct ValidatorProfile {
     pub referral_id: ReferralId,
 }
 
-impl std::fmt::Debug for ValidatorProfile {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<BlockNumber: Debug> Debug for ValidatorProfile<BlockNumber> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("ValidatorProfile")
             .field("registered_at", &self.registered_at)
             .field("is_chilled", &self.is_chilled)
@@ -126,4 +154,37 @@ impl std::fmt::Debug for ValidatorProfile {
             .field("referral_id", &String::from_utf8_lossy(&self.referral_id))
             .finish()
     }
+}
+
+/// Vote weight properties of validator.
+#[derive(PartialEq, Eq, Clone, Default, Debug, Encode, Decode)]
+pub struct ValidatorLedger<Balance, VoteWeight, BlockNumber> {
+    /// The total amount of all the nominators' vote balances.
+    pub total_nomination: Balance,
+    /// Last calculated total vote weight of current validator.
+    pub last_total_vote_weight: VoteWeight,
+    /// Block number at which point `last_total_vote_weight` just updated.
+    pub last_total_vote_weight_update: BlockNumber,
+}
+
+/// Vote weight properties of nominator.
+#[derive(PartialEq, Eq, Clone, Default, Debug, Encode, Decode)]
+pub struct NominatorLedger<Balance, VoteWeight, BlockNumber> {
+    /// The amount of vote.
+    pub nomination: Balance,
+    /// Last calculated total vote weight of current nominator.
+    pub last_vote_weight: VoteWeight,
+    /// Block number at which point `last_vote_weight` just updated.
+    pub last_vote_weight_update: BlockNumber,
+    /// Unbonded entries.
+    pub unbonded_chunks: Vec<Unbonded<Balance, BlockNumber>>,
+}
+
+/// Type for noting when the unbonded fund can be withdrawn.
+#[derive(PartialEq, Eq, Clone, Debug, Encode, Decode)]
+pub struct Unbonded<Balance, BlockNumber> {
+    /// Amount of funds to be unlocked.
+    pub value: Balance,
+    /// Block number at which point it'll be unlocked.
+    pub locked_until: BlockNumber,
 }

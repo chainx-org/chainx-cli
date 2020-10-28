@@ -1,6 +1,4 @@
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use anyhow::Result;
 use structopt::StructOpt;
@@ -8,7 +6,7 @@ use subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
 
 use crate::{
     runtime::{primitives::AccountId, ChainXSigner},
-    utils::{build_client, parse_account},
+    utils::{build_client, parse_account, read_code},
 };
 
 /// System
@@ -19,20 +17,12 @@ pub enum System {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         who: AccountId,
     },
-    /// Transfer some balances from signer to another account.
-    #[structopt(name = "set-code-without-checks")]
+    /// Set code without checking.
     SetCodeWithoutChecks {
         /// Code path
         #[structopt(index = 1, long, parse(from_os_str))]
         code: PathBuf,
     },
-}
-
-pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>> {
-    let mut file = File::open(code_path)?;
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)?;
-    Ok(data)
 }
 
 impl System {

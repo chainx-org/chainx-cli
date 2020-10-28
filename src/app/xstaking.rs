@@ -5,8 +5,9 @@ use crate::{
     runtime::{
         primitives::{AccountId, Balance},
         xpallets::xstaking::{
-            BondCallExt, ChillCallExt, RebondCallExt, RegisterCallExt, SetValidatorCountCallExt,
-            UnbondCallExt, ValidateCallExt, ValidatorsStoreExt,
+            BondCallExt, ChillCallExt, NominationsStoreExt, RebondCallExt, RegisterCallExt,
+            SetValidatorCountCallExt, UnbondCallExt, ValidateCallExt, ValidatorLedgersStoreExt,
+            ValidatorsStoreExt,
         },
         ChainXSigner,
     },
@@ -17,7 +18,6 @@ use crate::{
 #[derive(Debug, StructOpt)]
 pub enum XStaking {
     /// Register as a validator.
-    #[structopt(name = "register")]
     Register {
         /// Validator nickname
         #[structopt(index = 1, long)]
@@ -26,21 +26,18 @@ pub enum XStaking {
         #[structopt(index = 2, long)]
         initial_bond: Balance,
     },
-    #[structopt(name = "bond")]
     Bond {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         target: AccountId,
         #[structopt(index = 2, long)]
         value: Balance,
     },
-    #[structopt(name = "unbond")]
     Unbond {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         target: AccountId,
         #[structopt(index = 2, long)]
         value: Balance,
     },
-    #[structopt(name = "rebond")]
     Rebond {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         from: AccountId,
@@ -49,25 +46,30 @@ pub enum XStaking {
         #[structopt(index = 3, long)]
         value: Balance,
     },
-    #[structopt(name = "validate")]
     Validate,
-    #[structopt(name = "chill")]
     Chill,
-    #[structopt(name = "set-validator-count")]
     SetValidatorCount {
         #[structopt(index = 1, long)]
         new: u32,
     },
-    #[structopt(name = "storage")]
     Storage(Storage),
 }
 
 #[derive(Debug, StructOpt)]
 pub enum Storage {
-    #[structopt(name = "validators")]
     Validators {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         validator_id: AccountId,
+    },
+    ValidatorLedgers {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        validator_id: AccountId,
+    },
+    Nominations {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        nominator: AccountId,
+        #[structopt(index = 2, long, parse(try_from_str = parse_account))]
+        nominatee: AccountId,
     },
 }
 
@@ -117,10 +119,21 @@ impl XStaking {
             }
             Self::Storage(storage) => match storage {
                 Storage::Validators { validator_id } => {
+                    let profile = client.validators(&validator_id, None).await?;
+                    println!("ValidatorProfile of {:?}: {:#?}", validator_id, profile);
+                }
+                Storage::ValidatorLedgers { validator_id } => {
+                    let ledgers = client.validator_ledgers(&validator_id, None).await?;
+                    println!("ValidatorLedger of {:?}: {:#?}", validator_id, ledgers);
+                }
+                Storage::Nominations {
+                    nominator,
+                    nominatee,
+                } => {
+                    let ledgers = client.nominations(&nominator, &nominatee, None).await?;
                     println!(
-                        "ValidatorProfile of {:?}: {:#?}",
-                        validator_id,
-                        client.validators(&validator_id, None).await?
+                        "NominatorLedger of {:?} => {:?}: {:#?}",
+                        nominator, nominatee, ledgers
                     );
                 }
             },

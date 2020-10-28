@@ -6,12 +6,10 @@ use crate::{runtime::ChainXSigner, utils::build_client};
 /// Session
 #[derive(structopt::StructOpt, Debug)]
 pub enum Session {
-    #[structopt(name = "set-keys")]
     SetKeys {
         #[structopt(index = 1, long)]
         keys: String,
     },
-    #[structopt(name = "validators")]
     Validators,
 }
 

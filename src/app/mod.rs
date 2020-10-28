@@ -2,6 +2,8 @@ pub mod balances;
 pub mod session;
 pub mod sudo;
 pub mod system;
+pub mod xassets;
+pub mod xmining_asset;
 pub mod xstaking;
 
 use anyhow::{anyhow, Result};
@@ -14,20 +16,19 @@ use crate::runtime::ChainXSigner;
 
 #[derive(StructOpt, Debug)]
 pub enum Cmd {
-    #[structopt(name = "balances")]
     Balances(balances::Balances),
-    #[structopt(name = "session")]
     Session(session::Session),
-    #[structopt(name = "sudo")]
     Sudo(sudo::Sudo),
-    #[structopt(name = "system")]
     System(system::System),
 
+    #[structopt(name = "xassets")]
+    XAssets(xassets::XAssets),
+    #[structopt(name = "xmining_asset")]
+    XMiningAsset(xmining_asset::XMingAsset),
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
 
     #[cfg(feature = "sc-cli")]
-    #[structopt(name = "inspect-key")]
     InspectKey,
 }
 
@@ -61,7 +62,7 @@ impl Into<AccountKeyring> for BuiltinAccounts {
 }
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "chainx-cli", no_version)]
+#[structopt(name = "chainx-cli", author, about, no_version)]
 pub struct App {
     /// Builtin test accounts.
     #[structopt(long, possible_values = &BuiltinAccounts::variants(), case_insensitive = true)]
@@ -109,6 +110,8 @@ impl App {
             Cmd::Session(session) => session.run(self.url, signer).await?,
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
+            Cmd::XAssets(xassets) => xassets.run(self.url, signer).await?,
+            Cmd::XMiningAsset(xmining_asset) => xmining_asset.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
             #[cfg(feature = "sc-cli")]
             Cmd::InspectKey => {
