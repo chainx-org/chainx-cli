@@ -678,6 +678,7 @@ dependencies = [
  "async-std",
  "env_logger",
  "hex",
+ "jsonrpsee",
  "pallet-im-online",
  "pallet-indices",
  "parity-scale-codec",

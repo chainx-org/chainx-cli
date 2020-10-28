@@ -1,31 +1,19 @@
 mod genesis;
+mod rpc;
 
-use std::{collections::BTreeMap, path::PathBuf};
+use std::path::PathBuf;
 
 use anyhow::Result;
 use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat};
 use structopt::StructOpt;
 
-use chainx_cli::{
-    build_client,
-    runtime::{
-        primitives::{AccountId, Balance, BlockNumber},
-        xpallets::{
-            xassets::{AssetBalanceStoreExt, AssetType, TotalAssetBalanceStoreExt},
-            xmining_asset::{
-                AssetLedger, AssetLedgersStoreExt, MinerLedger, MinerLedgersStoreExt, MiningWeight,
-            },
-            xstaking::{
-                NominationsStoreExt, NominatorLedger, ValidatorLedger, ValidatorLedgersStoreExt,
-                VoteWeight,
-            },
-        },
-    },
-};
-use subxt::system::AccountStoreExt;
+use chainx_cli::runtime::xpallets::xassets::AssetType;
 
-use self::genesis::{
-    read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
+use self::{
+    genesis::{
+        read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
+    },
+    rpc::Rpc,
 };
 
 #[derive(StructOpt, Debug)]
@@ -59,80 +47,70 @@ async fn main() -> Result<()> {
     let genesis = read_genesis_json(config.genesis)?;
 
     set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
-    let client = build_client(config.chainx_url).await?;
-    let genesis_hash = client.genesis().clone();
+
+    let rpc = Rpc::new(config.chainx_url).await?;
+
+    let genesis_hash = rpc.genesis_hash().await?;
     println!("Genesis Hash: {:?}", genesis_hash);
 
-    // println!("================================================================================");
-    // println!("========================= Verify PCX Balance ====================================");
-    // println!("================================================================================");
-    //
-    // let mut miss_account_cnt = 0;
-    // let mut miss_balance = 0;
-    // for FreeBalanceInfo { who, free } in genesis.balances.free_balances {
-    //     let account_data = client.account(&who, Some(genesis_hash)).await?.data;
-    //     if account_data.free + account_data.reserved != free {
-    //         miss_account_cnt += 1;
-    //         miss_balance += free;
-    //         println!(
-    //             "[ERROR]   {}: got = {}, expect: {}",
-    //             who,
-    //             account_data.free + account_data.reserved,
-    //             free
-    //         );
-    //     }
-    // }
-    // println!(
-    //     "miss account number: {}, miss balance: {}",
-    //     miss_account_cnt, miss_balance
-    // );
+    println!("================================================================================");
+    println!("========================= Verify PCX Balance ====================================");
+    println!("================================================================================");
+
+    let account_info = rpc.get_accounts_info(Some(genesis_hash)).await?;
+
+    for FreeBalanceInfo { who, free } in genesis.balances.free_balances {
+        if let Some(account_info) = account_info.get(&who) {
+            assert_eq!(account_info.data.free + account_info.data.reserved, free);
+        }
+    }
+
+    println!("Verify PCX Balance successfully");
 
     println!("================================================================================");
     println!("======================= Verify X-BTC Balance ===================================");
     println!("================================================================================");
 
+    let asset_balance = rpc.get_asset_balance(Some(genesis_hash)).await?;
+
     let mut sum = 0;
     println!("X-BTC account number: {}", genesis.xassets.len());
     for FreeBalanceInfo { who, free } in genesis.xassets {
-        let asset_balance: BTreeMap<AssetType, Balance> =
-            client.asset_balance(&who, 1, Some(genesis_hash)).await?;
-        let usable_balance = asset_balance
-            .get(&AssetType::Usable)
-            .cloned()
-            .unwrap_or_default();
-        assert_eq!(usable_balance, free);
-        sum += usable_balance;
-        // if usable_balance != free {
-        //     println!(
-        //         "[ERROR]   {}: got = {}, expect: {}",
-        //         who, usable_balance, free
-        //     );
-        // }
+        if let Some(asset_balance) = asset_balance.get(&who) {
+            let xbtc_asset = asset_balance.get(&1).unwrap();
+            let xbtc_usable_balance = xbtc_asset
+                .get(&AssetType::Usable)
+                .cloned()
+                .unwrap_or_default();
+            assert_eq!(xbtc_usable_balance, free);
+            sum += xbtc_usable_balance;
+        }
     }
-    println!(
-        "X-BTC usable balance sum (Sum of AssetBalance Storage): {}",
-        sum
-    );
+    println!("X-BTC Usable Balance Sum (AssetBalance Storage): {}", sum);
 
-    let total_xbtc_balance: BTreeMap<AssetType, Balance> =
-        client.total_asset_balance(1, Some(genesis_hash)).await?;
+    let total_asset_balance = rpc.get_total_asset_balance(Some(genesis_hash)).await?;
+    let total_xbtc_balance = total_asset_balance.get(&1).unwrap();
     let total_xbtc_usable_balance = total_xbtc_balance
         .get(&AssetType::Usable)
         .cloned()
         .unwrap_or_default();
     println!(
-        "Total X-BTC usable balance (TotalAssetBalance Storage): {}",
+        "Total X-BTC Usable Balance (TotalAssetBalance Storage): {}",
         total_xbtc_usable_balance
     );
 
-    println!(
-        "X-BTC balance: got = {}, expect = {}",
-        total_xbtc_usable_balance, genesis.xmining_asset.xbtc_info.balance
+    assert_eq!(
+        total_xbtc_usable_balance,
+        genesis.xmining_asset.xbtc_info.balance
     );
+
+    println!("Verify X-BTC Balance successfully");
 
     println!("================================================================================");
     println!("======================== Verify X-BTC Weight ===================================");
     println!("================================================================================");
+
+    let miner_ledgers = rpc.get_miner_ledgers(Some(genesis_hash)).await?;
 
     let mut sum = 0;
     println!(
@@ -140,36 +118,38 @@ async fn main() -> Result<()> {
         genesis.xmining_asset.xbtc_miners.len()
     );
     for XBtcMiner { who, weight } in genesis.xmining_asset.xbtc_miners {
-        let xbtc_miner_ledger: MinerLedger<MiningWeight, BlockNumber> =
-            client.miner_ledgers(&who, 1, Some(genesis_hash)).await?;
-        let xbtc_mining_weight = xbtc_miner_ledger.last_mining_weight;
-        assert_eq!(xbtc_mining_weight, weight);
-        sum += xbtc_mining_weight;
+        if let Some(miner_ledger) = miner_ledgers.get(&who) {
+            let xbtc_miner_ledger = miner_ledger.get(&1).unwrap();
+            let xbtc_mining_weight = xbtc_miner_ledger.last_mining_weight;
+            assert_eq!(xbtc_mining_weight, weight);
+            sum += xbtc_mining_weight;
+        }
     }
-    println!(
-        "X-BTC mining weight sum (Sum of MinerLedgers Storage): {}",
-        sum
-    );
+    println!("X-BTC Mining Weight Sum (MinerLedgers Storage): {}", sum);
 
-    let total_xbtc_weight: AssetLedger<MiningWeight, BlockNumber> =
-        client.asset_ledgers(1, Some(genesis_hash)).await?;
-    let total_xbtc_mining_weight = total_xbtc_weight.last_total_mining_weight;
+    let asset_ledgers = rpc.get_asset_ledgers(Some(genesis_hash)).await?;
+    let total_xbtc_mining_weight = asset_ledgers.get(&1).unwrap().last_total_mining_weight;
     println!(
-        "Total X-BTC mining weight (AssetLedgers Storage): {}",
+        "Total X-BTC Mining Weight (AssetLedgers Storage): {}",
         total_xbtc_mining_weight
     );
 
     println!(
-        "X-BTC mining weight: got = {}, expect = {}",
+        "X-BTC Mining Weight: got = {}, expect = {}",
         total_xbtc_mining_weight, genesis.xmining_asset.xbtc_info.weight
     );
+
+    println!("Verify X-BTC Weight successfully");
 
     println!("================================================================================");
     println!("====================== Verify Vote Nomination & Weight =========================");
     println!("================================================================================");
 
-    let mut validators = BTreeMap::<AccountId, (u128, u128)>::new();
+    let nominator_ledgers = rpc.get_nominations(Some(genesis_hash)).await?;
 
+    let mut nomination_sum = 0;
+    let mut vote_weight_sum = 0;
+    println!("Nominator number: {}", genesis.xstaking.nominators.len());
     for NominatorInfo {
         nominator,
         nominations,
@@ -181,39 +161,48 @@ async fn main() -> Result<()> {
             weight,
         } in nominations
         {
-            let nominator_ledger: NominatorLedger<Balance, VoteWeight, BlockNumber> = client
-                .nominations(&nominator, &nominee, Some(genesis_hash))
-                .await?;
+            if let Some(nominator_ledger) = nominator_ledgers.get(&nominator) {
+                if let Some(nominator_ledger) = nominator_ledger.get(&nominee) {
+                    assert_eq!(nominator_ledger.nomination, nomination);
+                    nomination_sum += nominator_ledger.nomination;
 
-            if nominator_ledger.nomination != nomination
-                || nominator_ledger.last_vote_weight != weight
-            {
-                println!(
-                    "[ERROR]   nominator = {}, nominee = {}, \
-                    Nomination (got = {}, expect: {}), \
-                    Weight (got = {}, expect: {})",
-                    nominator,
-                    nominee,
-                    nominator_ledger.nomination,
-                    nomination,
-                    nominator_ledger.last_vote_weight,
-                    weight
-                );
+                    assert_eq!(nominator_ledger.last_vote_weight, weight);
+                    vote_weight_sum += nominator_ledger.last_vote_weight;
+                }
             }
-            // assert_eq!(nominator_ledger.nomination, nomination);
-            // assert_eq!(nominator_ledger.last_vote_weight, weight);
-
-            validators
-                .entry(nominee)
-                .and_modify(|(total_nomination, total_vote_weight)| {
-                    *total_nomination += nominator_ledger.nomination;
-                    *total_vote_weight += nominator_ledger.last_vote_weight;
-                })
-                .or_insert(Default::default());
         }
     }
+    println!(
+        "Nomination Sum (Nominations Storage): {}, Vote Weight Sum (Nominations Storage): {}",
+        nomination_sum, vote_weight_sum,
+    );
 
-    // println!("Validators: {:#?}", validators);
+    let validator_ledgers = rpc.get_validator_ledgers(Some(genesis_hash)).await?;
+
+    let mut nomination_sum = 0;
+    let mut vote_weight_sum = 0;
+    println!("Validator number: {}", genesis.xstaking.validators.len());
+    for ValidatorInfo {
+        who,
+        total_nomination,
+        total_weight,
+        ..
+    } in genesis.xstaking.validators
+    {
+        if let Some(validator_ledger) = validator_ledgers.get(&who) {
+            assert_eq!(validator_ledger.total_nomination, total_nomination);
+            nomination_sum += validator_ledger.total_nomination;
+
+            assert_eq!(validator_ledger.last_total_vote_weight, total_weight);
+            vote_weight_sum += validator_ledger.last_total_vote_weight;
+        }
+    }
+    println!(
+        "Nomination Sum (ValidatorLedgers Storage): {}, Vote Weight Sum (ValidatorLedgers Storage): {}",
+        nomination_sum, vote_weight_sum,
+    );
+
+    println!("Verify Vote Nomination & Weight successfully");
 
     Ok(())
 }
