@@ -1,9 +1,18 @@
+use std::{fs::File, io::Read, path::Path};
+
 use anyhow::{anyhow, Result};
 use sp_core::crypto::Ss58Codec;
 use sp_keyring::AccountKeyring;
 use subxt::ClientBuilder;
 
 use crate::runtime::{primitives::AccountId, ChainXClient, ChainXRuntime};
+
+pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>> {
+    let mut file = File::open(code_path)?;
+    let mut data = Vec::new();
+    file.read_to_end(&mut data)?;
+    Ok(data)
+}
 
 /// Parses AccountId from String, also supports passing the test accounts directly.
 pub fn parse_account(address: &str) -> Result<AccountId> {

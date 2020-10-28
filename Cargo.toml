@@ -3,6 +3,13 @@ name = "chainx-cli"
 version = "2.0.0-alpha.0"
 authors = ["The ChainX Authors"]
 edition = "2018"
+description = "Rust Command Line Interface for ChainX 2.0 based on substrate-subxt"
+readme = "README.md"
+license = "LICENSE"
+
+[[bin]]
+name = "chainx-cli"
+path = "src/bin/cli.rs"
 
 [dependencies]
 anyhow = "1.0"

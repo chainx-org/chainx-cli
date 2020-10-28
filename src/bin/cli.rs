@@ -1,11 +1,8 @@
-mod app;
-mod runtime;
-mod utils;
-
-use self::app::App;
+use anyhow::Result;
+use chainx_cli::App;
 
 #[async_std::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<()> {
     env_logger::init();
 
     let cli = App::init();

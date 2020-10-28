@@ -9,22 +9,18 @@ use subxt::{
 };
 
 use crate::{
-    app::system::read_code,
     runtime::{
         primitives::*,
         xpallets::xstaking::{SetSessionsPerEraCall, SetValidatorCountCall},
         ChainXClient, ChainXRuntime, ChainXSigner,
     },
-    utils::build_client,
+    utils::{build_client, read_code},
 };
 
 /// Sudo
 #[derive(Debug, StructOpt)]
 pub enum Sudo {
-    #[structopt(name = "sudo")]
     Sudo(Calls),
-
-    #[structopt(name = "sudo-unchecked-weight")]
     SudoUncheckedWeight(Calls),
 }
 
@@ -32,9 +28,21 @@ pub enum Sudo {
 pub enum Calls {
     #[structopt(name = "system")]
     System(System),
-
     #[structopt(name = "xstaking")]
     XStaking(XStaking),
+}
+
+#[derive(Debug, StructOpt)]
+pub enum System {
+    SetCode {
+        #[structopt(index = 1, long, parse(from_os_str))]
+        code: PathBuf,
+    },
+    SetCodeWithoutChecks {
+        /// Code path
+        #[structopt(index = 1, long, parse(from_os_str))]
+        code: PathBuf,
+    },
 }
 
 #[derive(Debug, StructOpt)]
@@ -46,20 +54,6 @@ pub enum XStaking {
     SetSessionsPerEra {
         #[structopt(index = 1, long)]
         new: BlockNumber,
-    },
-}
-
-#[derive(Debug, StructOpt)]
-pub enum System {
-    SetCode {
-        #[structopt(index = 1, long, parse(from_os_str))]
-        code: PathBuf,
-    },
-    #[structopt(name = "set-code-without-checks")]
-    SetCodeWithoutChecks {
-        /// Code path
-        #[structopt(index = 1, long, parse(from_os_str))]
-        code: PathBuf,
     },
 }
 
