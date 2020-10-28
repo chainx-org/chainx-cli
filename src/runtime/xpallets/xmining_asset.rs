@@ -26,7 +26,7 @@ pub struct ClaimCall<T: XMiningAsset> {
 }
 
 // ============================================================================
-// Call
+// Event
 // ============================================================================
 
 /// An asset miner claimed the mining reward. [claimer, asset_id, amount]
