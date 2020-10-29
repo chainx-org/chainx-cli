@@ -53,19 +53,25 @@ async fn main() -> Result<()> {
     let genesis_hash = rpc.genesis_hash().await?;
     println!("Genesis Hash: {:?}", genesis_hash);
 
+    let pots_cnt = genesis.balances.wellknown_accounts.legacy_pots.len();
+    println!("legacy pot count: {}", pots_cnt);
+
     println!("================================================================================");
-    println!("========================= Verify PCX Balance ====================================");
+    println!("========================= Verify PCX Balance ===================================");
     println!("================================================================================");
 
     let account_info = rpc.get_accounts_info(Some(genesis_hash)).await?;
 
+    let mut missing_cnt = 0;
     for FreeBalanceInfo { who, free } in genesis.balances.free_balances {
         if let Some(account_info) = account_info.get(&who) {
             assert_eq!(account_info.data.free + account_info.data.reserved, free);
+        } else {
+            missing_cnt += 1;
+            println!("[ERROR] Missing PCX balance of `{}`", who);
         }
     }
-
-    println!("Verify PCX Balance successfully");
+    println!("Missing PCX account count: {}", missing_cnt);
 
     println!("================================================================================");
     println!("======================= Verify X-BTC Balance ===================================");
@@ -74,6 +80,7 @@ async fn main() -> Result<()> {
     let asset_balance = rpc.get_asset_balance(Some(genesis_hash)).await?;
 
     let mut sum = 0;
+    let mut missing_cnt = 0;
     println!("X-BTC account number: {}", genesis.xassets.len());
     for FreeBalanceInfo { who, free } in genesis.xassets {
         if let Some(asset_balance) = asset_balance.get(&who) {
@@ -84,8 +91,12 @@ async fn main() -> Result<()> {
                 .unwrap_or_default();
             assert_eq!(xbtc_usable_balance, free);
             sum += xbtc_usable_balance;
+        } else {
+            missing_cnt += 1;
+            println!("[ERROR] Missing X-BTC asset balance of `{}`", who);
         }
     }
+    println!("Missing X-BTC account count: {}", missing_cnt);
     println!("X-BTC Usable Balance Sum (AssetBalance Storage): {}", sum);
 
     let total_asset_balance = rpc.get_total_asset_balance(Some(genesis_hash)).await?;
@@ -104,8 +115,6 @@ async fn main() -> Result<()> {
         genesis.xmining_asset.xbtc_info.balance
     );
 
-    println!("Verify X-BTC Balance successfully");
-
     println!("================================================================================");
     println!("======================== Verify X-BTC Weight ===================================");
     println!("================================================================================");
@@ -113,6 +122,7 @@ async fn main() -> Result<()> {
     let miner_ledgers = rpc.get_miner_ledgers(Some(genesis_hash)).await?;
 
     let mut sum = 0;
+    let mut missing_cnt = 0;
     println!(
         "X-BTC miners number: {}",
         genesis.xmining_asset.xbtc_miners.len()
@@ -123,8 +133,12 @@ async fn main() -> Result<()> {
             let xbtc_mining_weight = xbtc_miner_ledger.last_mining_weight;
             assert_eq!(xbtc_mining_weight, weight);
             sum += xbtc_mining_weight;
+        } else {
+            missing_cnt += 1;
+            println!("[ERROR] Missing X-BTC mining weight of `{}`", who);
         }
     }
+    println!("Missing X-BTC miner count: {}", missing_cnt);
     println!("X-BTC Mining Weight Sum (MinerLedgers Storage): {}", sum);
 
     let asset_ledgers = rpc.get_asset_ledgers(Some(genesis_hash)).await?;
@@ -139,8 +153,6 @@ async fn main() -> Result<()> {
         total_xbtc_mining_weight, genesis.xmining_asset.xbtc_info.weight
     );
 
-    println!("Verify X-BTC Weight successfully");
-
     println!("================================================================================");
     println!("====================== Verify Vote Nomination & Weight =========================");
     println!("================================================================================");
@@ -149,6 +161,7 @@ async fn main() -> Result<()> {
 
     let mut nomination_sum = 0;
     let mut vote_weight_sum = 0;
+    let mut missing_cnt = 0;
     println!("Nominator number: {}", genesis.xstaking.nominators.len());
     for NominatorInfo {
         nominator,
@@ -169,9 +182,16 @@ async fn main() -> Result<()> {
                     assert_eq!(nominator_ledger.last_vote_weight, weight);
                     vote_weight_sum += nominator_ledger.last_vote_weight;
                 }
+            } else {
+                missing_cnt += 1;
+                println!(
+                    "[ERROR] Missing vote nomination & weight of `{}` => `{}`",
+                    nominator, nominee
+                );
             }
         }
     }
+    println!("Missing nominator count: {}", missing_cnt);
     println!(
         "Nomination Sum (Nominations Storage): {}, Vote Weight Sum (Nominations Storage): {}",
         nomination_sum, vote_weight_sum,
@@ -181,6 +201,7 @@ async fn main() -> Result<()> {
 
     let mut nomination_sum = 0;
     let mut vote_weight_sum = 0;
+    let mut missing_cnt = 0;
     println!("Validator number: {}", genesis.xstaking.validators.len());
     for ValidatorInfo {
         who,
@@ -195,14 +216,19 @@ async fn main() -> Result<()> {
 
             assert_eq!(validator_ledger.last_total_vote_weight, total_weight);
             vote_weight_sum += validator_ledger.last_total_vote_weight;
+        } else {
+            missing_cnt += 1;
+            println!(
+                "[ERROR] Missing vote nomination & weight of validator `{}`",
+                who
+            );
         }
     }
+    println!("Missing validator count: {}", missing_cnt);
     println!(
         "Nomination Sum (ValidatorLedgers Storage): {}, Vote Weight Sum (ValidatorLedgers Storage): {}",
         nomination_sum, vote_weight_sum,
     );
-
-    println!("Verify Vote Nomination & Weight successfully");
 
     Ok(())
 }
