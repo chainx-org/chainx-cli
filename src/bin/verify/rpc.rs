@@ -66,10 +66,10 @@ impl Rpc {
             .map(|x| hex::encode(x.0))
             .collect::<Vec<_>>();
 
-        // System Account + hash = 96 chars
+        // System Account (32 bytes hex) + hash (16 bytes hex) = 48 bytes hex
         let accounts = keys
             .into_iter()
-            .map(|x| format!("0x{}", &x[96..]))
+            .map(|x| format!("0x{}", &x[STORAGE_PREFIX_LEN + BLAKE_HASH_LEN..]))
             .collect::<Vec<_>>();
         Ok(accounts)
     }
@@ -97,7 +97,9 @@ impl Rpc {
             let account_id = pubkey
                 .parse::<AccountId>()
                 .map_err(|err| anyhow!("{}", err))?;
+
             let account_info: AccountInfo<ChainXRuntime> = Decode::decode(&mut value.0.as_slice())?;
+
             result.insert(account_id, account_info);
         }
         Ok(result)
@@ -148,8 +150,10 @@ impl Rpc {
             let key = &hashed_key_key[TWOX_HASH_LEN..];
             let mut asset_id = [0u8; 4];
             asset_id.copy_from_slice(hex::decode(key)?.as_slice());
+
             let asset_balance: BTreeMap<AssetType, Balance> =
                 Decode::decode(&mut value.0.as_slice())?;
+
             total_asset_balance.insert(AssetId::from_le_bytes(asset_id), asset_balance);
         }
         Ok(total_asset_balance)
@@ -262,8 +266,10 @@ impl Rpc {
             let hashed_key_key = &key[STORAGE_PREFIX_LEN..];
             let key = &hashed_key_key[TWOX_HASH_LEN..];
             let validator = key.parse::<AccountId>().map_err(|err| anyhow!("{}", err))?;
+
             let validator_ledger: ValidatorLedger<Balance, VoteWeight, BlockNumber> =
                 Decode::decode(&mut value.0.as_slice())?;
+
             validator_ledgers.insert(validator, validator_ledger);
         }
         Ok(validator_ledgers)
