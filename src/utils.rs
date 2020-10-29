@@ -1,11 +1,15 @@
 use std::{fs::File, io::Read, path::Path};
 
 use anyhow::{anyhow, Result};
-use sp_core::crypto::Ss58Codec;
+use sp_core::crypto::{Pair, Public, Ss58Codec};
 use sp_keyring::AccountKeyring;
+use sp_runtime::traits::{IdentifyAccount, Verify};
 use subxt::ClientBuilder;
 
-use crate::runtime::{primitives::AccountId, ChainXClient, ChainXRuntime};
+use crate::runtime::{
+    primitives::{AccountId, Signature},
+    ChainXClient, ChainXRuntime,
+};
 
 pub fn read_code<P: AsRef<Path>>(code_path: P) -> Result<Vec<u8>> {
     let mut file = File::open(code_path)?;
@@ -28,6 +32,23 @@ pub fn parse_account(address: &str) -> Result<AccountId> {
         _ => Ok(AccountId::from_string(address)
             .map_err(|err| anyhow!("Failed to parse account address: {:?}", err))?),
     }
+}
+
+type AccountPublic = <Signature as Verify>::Signer;
+
+/// Helper function to generate a crypto pair from seed
+pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
+    TPublic::Pair::from_string(&format!("//{}", seed), None)
+        .expect("static values are valid; qed")
+        .public()
+}
+
+/// Helper function to generate an account ID from seed
+pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
+where
+    AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+{
+    AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Builds a ChainX runtime specific client.

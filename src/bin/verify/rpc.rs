@@ -17,7 +17,7 @@ use chainx_cli::runtime::{
     xpallets::{
         xassets::AssetType,
         xmining_asset::{AssetLedger, MinerLedger, MiningWeight},
-        xstaking::{NominatorLedger, ValidatorLedger, VoteWeight},
+        xstaking::{NominatorLedger, ValidatorLedger, ValidatorProfile, VoteWeight},
     },
     ChainXRuntime,
 };
@@ -215,6 +215,37 @@ impl Rpc {
             entry.insert(AssetId::from_le_bytes(asset_id), miner_ledger);
         }
         Ok(miner_ledgers)
+    }
+
+    pub async fn get_vesting_account(&self, hash: Option<Hash>) -> Result<AccountId> {
+        let prefix = storage_prefix_for("XStaking", "VestingAccount");
+        let data = self.get_pairs(StorageKey(prefix.clone()), hash).await?;
+        let mut vesting_account = Default::default();
+        for (_key, value) in data {
+            vesting_account = Decode::decode(&mut value.0.as_slice())?;
+        }
+        Ok(vesting_account)
+    }
+
+    pub async fn get_validators(
+        &self,
+        hash: Option<Hash>,
+    ) -> Result<BTreeMap<AccountId, ValidatorProfile<BlockNumber>>> {
+        let prefix = storage_prefix_for("XStaking", "Validators");
+        let data = self.get_pairs(StorageKey(prefix), hash).await?;
+        let mut validator_profiles = BTreeMap::new();
+        for (key, value) in data {
+            let key = hex::encode(&key.0);
+            let hashed_key_key = &key[STORAGE_PREFIX_LEN..];
+            let key = &hashed_key_key[TWOX_HASH_LEN..];
+            let validator = key.parse::<AccountId>().map_err(|err| anyhow!("{}", err))?;
+
+            let validator_profile: ValidatorProfile<BlockNumber> =
+                Decode::decode(&mut value.0.as_slice())?;
+
+            validator_profiles.insert(validator, validator_profile);
+        }
+        Ok(validator_profiles)
     }
 
     pub async fn get_nominations(

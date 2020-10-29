@@ -677,6 +677,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "env_logger",
+ "frame-support",
  "hex",
  "jsonrpsee",
  "pallet-im-online",
