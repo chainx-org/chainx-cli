@@ -5,6 +5,7 @@ pub mod system;
 pub mod xassets;
 pub mod xmining_asset;
 pub mod xstaking;
+pub mod monitor;
 
 use anyhow::{anyhow, Result};
 use sp_core::Pair;
@@ -27,6 +28,8 @@ pub enum Cmd {
     XMiningAsset(xmining_asset::XMingAsset),
     #[structopt(name = "xstaking")]
     XStaking(xstaking::XStaking),
+    #[structopt(name = "monitor")]
+    Monitor(monitor::Monitor),
 
     #[cfg(feature = "sc-cli")]
     InspectKey,
@@ -113,7 +116,9 @@ impl App {
             Cmd::XAssets(xassets) => xassets.run(self.url, signer).await?,
             Cmd::XMiningAsset(xmining_asset) => xmining_asset.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,
-            #[cfg(feature = "sc-cli")]
+            Cmd::Monitor(monitor) => {
+                monitor.run(self.url).await?
+            },
             Cmd::InspectKey => {
                 if let Some(ref uri) = self.get_uri() {
                     sc_cli::utils::print_from_uri::<sp_core::sr25519::Pair>(

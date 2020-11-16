@@ -1,0 +1,6 @@
+[submodule "substrate-subxt"]
+  path = lib3rd/substrate-subxt
+  url = git@github.com:chainx-org/substrate-subxt
+[submodule "lib3rd/substrate-subxt"]
+	path = lib3rd/substrate-subxt
+	url = git@github.com:chainx-org/substrate-subxt
