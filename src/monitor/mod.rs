@@ -13,7 +13,8 @@ type EventHandler = fn() -> ();
 pub enum EventType {
     SignerLack,
     TestEvent,
-    RpcTimeout
+    RpcTimeout,
+    NewBlockReceiveTimeout,
 }
 
 #[derive(Clone)]
@@ -54,7 +55,7 @@ pub struct MonitorOption {
 pub struct Monitor {
     option: MonitorOption,
     middlewares: Arc<RwLock<Vec<Middleware>>>,
-    pub em: EventManager,
+    em: EventManager,
 }
 
 impl Monitor {
@@ -93,10 +94,10 @@ impl Monitor {
             let url = self.option.node_url.clone();
             match build_client(url).await {
                 Ok(client) => {
-                    let mut sub = client.subscribe_blocks().await.unwrap();
-                    while let block = sub.next().await {
+                    loop {
+                        std::thread::sleep(std::time::Duration::from_secs(1));
                         let middlewares = self.middlewares.read().unwrap();
-                        middlewares.iter().for_each(|f| f(client.clone(), self.clone(), block.clone()));
+                        middlewares.iter().for_each(|f| f(client.clone(), self.clone()));
                     }
                 }
                 _ => {
@@ -104,7 +105,7 @@ impl Monitor {
                 },
             }
             log::info!("No responding from server. Retry scheduled after 3s...");
-            std::thread::sleep(std::time::Duration::from_millis(3000));
+            std::thread::sleep(std::time::Duration::from_secs(3));
         }
     }
 }
