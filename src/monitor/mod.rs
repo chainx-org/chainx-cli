@@ -1,5 +1,4 @@
 use crate::utils::build_client;
-use anyhow::Result;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use structopt::StructOpt;
@@ -14,6 +13,7 @@ type EventHandler = fn() -> ();
 pub enum EventType {
     SignerLack,
     TestEvent,
+    RpcTimeout
 }
 
 #[derive(Clone)]
@@ -87,20 +87,24 @@ impl Monitor {
         self
     }
 
-    pub async fn run(&self) -> Result<()> {
-        let url = self.option.node_url.clone();
-        match build_client(url).await {
-            Ok(client) => {
-                let mut sub = client.subscribe_blocks().await.unwrap();
-                #[allow(irrefutable_let_patterns)]
-                while let _ = sub.next().await {
-                    let middlewares = self.middlewares.read().unwrap();
-                    middlewares.iter().for_each(|f| f(&client, &self));
+    #[allow(irrefutable_let_patterns)]
+    pub async fn run(&self) {
+        loop  {
+            let url = self.option.node_url.clone();
+            match build_client(url).await {
+                Ok(client) => {
+                    let mut sub = client.subscribe_blocks().await.unwrap();
+                    while let block = sub.next().await {
+                        let middlewares = self.middlewares.read().unwrap();
+                        middlewares.iter().for_each(|f| f(client.clone(), self.clone(), block.clone()));
+                    }
                 }
+                _ => {
+                    self.emit(EventType::RpcTimeout);
+                },
             }
-            _ => println!("not ok"),
+            log::info!("No responding from server. Retry scheduled after 3s...");
+            std::thread::sleep(std::time::Duration::from_millis(3000));
         }
-        println!("{:?}", self.option);
-        Ok(())
     }
 }

@@ -692,6 +692,7 @@ dependencies = [
  "frame-support",
  "hex",
  "jsonrpsee",
+ "log",
  "pallet-im-online",
  "pallet-indices",
  "parity-scale-codec",
