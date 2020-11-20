@@ -8,8 +8,7 @@ pub mod xstaking;
 
 use anyhow::{anyhow, Result};
 use sp_core::Pair;
-use sp_keyring::AccountKeyring;
-use structopt::{clap::arg_enum, StructOpt};
+use structopt::StructOpt;
 use subxt::PairSigner;
 
 use crate::runtime::ChainXSigner;
@@ -32,41 +31,12 @@ pub enum Cmd {
     InspectKey,
 }
 
-arg_enum! {
-  #[derive(Clone, Debug)]
-  pub enum BuiltinAccounts {
-      Alice,
-      Bob,
-      Charlie,
-      Dave,
-      Eve,
-      Ferdie,
-      One,
-      Two,
-  }
-}
-
-impl Into<AccountKeyring> for BuiltinAccounts {
-    fn into(self) -> AccountKeyring {
-        match self {
-            Self::Alice => AccountKeyring::Alice,
-            Self::Bob => AccountKeyring::Bob,
-            Self::Charlie => AccountKeyring::Charlie,
-            Self::Dave => AccountKeyring::Dave,
-            Self::Eve => AccountKeyring::Eve,
-            Self::Ferdie => AccountKeyring::Ferdie,
-            Self::One => AccountKeyring::One,
-            Self::Two => AccountKeyring::Two,
-        }
-    }
-}
-
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chainx-cli", author, about, no_version)]
 pub struct App {
-    /// Builtin test accounts.
-    #[structopt(long, possible_values = &BuiltinAccounts::variants(), case_insensitive = true)]
-    pub signer: Option<BuiltinAccounts>,
+    /// Accounts [possible values: Alice, Bob, Charlie, Dave, Eve, Ferdie, One, Two]
+    #[structopt(long)]
+    pub signer: Option<String>,
 
     /// A Key URI used as a signer.
     ///
@@ -92,6 +62,12 @@ fn as_sr25519_signer(uri: &str) -> Result<ChainXSigner> {
     sp_core::sr25519::Pair::from_phrase(&uri, None)
         .map(|(pair, _seed)| PairSigner::new(pair))
         .map_err(|err| anyhow!("Failed to generate sr25519 Pair from uri: {:?}", err))
+}
+
+/// Generate a crypto pair from seed.
+pub fn get_pair_from_seed(seed: &str) -> sp_core::sr25519::Pair {
+    sp_core::sr25519::Pair::from_string(&format!("//{}", seed), None)
+        .expect("static values are valid; qed")
 }
 
 impl App {
@@ -139,11 +115,8 @@ impl App {
     }
 
     fn builtin_signer(&self) -> ChainXSigner {
-        let signer = self
-            .signer
-            .clone()
-            .unwrap_or_else(|| BuiltinAccounts::Alice);
-        let signer: AccountKeyring = signer.into();
-        PairSigner::new(signer.pair())
+        let signer = self.signer.clone().unwrap_or_else(|| "Alice".to_string());
+        let signer = get_pair_from_seed(&signer);
+        PairSigner::new(signer)
     }
 }
