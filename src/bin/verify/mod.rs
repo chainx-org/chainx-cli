@@ -28,6 +28,9 @@ use self::{
 };
 use frame_support::sp_std::collections::btree_map::BTreeMap;
 
+/// The decimals of PCX.
+const PCX: u128 = 100_000_000;
+
 #[derive(StructOpt, Debug)]
 #[structopt(
     name = "chainx-verify",
@@ -51,7 +54,7 @@ impl Config {
 }
 
 parameter_types! {
-    pub const TreasuryModuleId: ModuleId = ModuleId(*b"py/trsry");
+    pub const TreasuryModuleId: ModuleId = ModuleId(*b"pcx/trsy");
 }
 
 /// Returns the validator account by the given reward pot account.
@@ -149,7 +152,30 @@ async fn main() -> Result<()> {
         };
 
         if let Some(account_info) = account_info.get(&who) {
-            assert_eq!(account_info.data.free + account_info.data.reserved, free);
+            if who == vesting_account {
+                // The missing 5000 PCX of team account is used for the 5 genesis nodes in 2.0 POA stage.
+                assert_eq!(
+                    account_info.data.free + account_info.data.reserved + 5000 * PCX,
+                    free,
+                    "{}",
+                    who
+                );
+            } else if who == treasury_account {
+                // The missing 100 PCX of treasury account is used for the root account.
+                assert_eq!(
+                    account_info.data.free + account_info.data.reserved + 100 * PCX,
+                    free,
+                    "{}",
+                    who
+                );
+            } else {
+                assert_eq!(
+                    account_info.data.free + account_info.data.reserved,
+                    free,
+                    "{}",
+                    who
+                );
+            }
             sum += account_info.data.free + account_info.data.reserved;
         } else {
             missing_cnt += 1;
@@ -249,14 +275,30 @@ async fn main() -> Result<()> {
         total_xbtc_mining_weight
     );
 
-    println!(
-        "X-BTC Mining Weight: got = {}, expect = {}",
-        total_xbtc_mining_weight, genesis.xmining_asset.xbtc_info.weight
+    assert_eq!(
+        total_xbtc_mining_weight,
+        genesis.xmining_asset.xbtc_info.weight
     );
 
     println!("================================================================================");
     println!("====================== Verify Vote Nomination & Weight =========================");
     println!("================================================================================");
+
+    let validator_ledgers = rpc.get_validator_ledgers(Some(genesis_hash)).await?;
+    let (total_nomination, total_vote_weight) = (
+        validator_ledgers
+            .iter()
+            .map(|(_, validator_ledger)| validator_ledger.total_nomination)
+            .sum::<Balance>(),
+        validator_ledgers
+            .iter()
+            .map(|(_, validator_ledger)| validator_ledger.last_total_vote_weight)
+            .sum::<Balance>(),
+    );
+    println!(
+        "Total Nomination: {}, Total Vote Weight: {}",
+        total_nomination, total_vote_weight
+    );
 
     let nominator_ledgers = rpc.get_nominations(Some(genesis_hash)).await?;
 
@@ -289,8 +331,9 @@ async fn main() -> Result<()> {
         "Nominator Nomination Sum (XStaking Nominations Storage): {}, Nominator Vote Weight Sum (XStaking Nominations Storage): {}",
         nomination_sum, vote_weight_sum,
     );
-
-    let validator_ledgers = rpc.get_validator_ledgers(Some(genesis_hash)).await?;
+    // The 5000 PCX nomination is from the 5 genesis nodes in 2.0 POA.
+    assert_eq!(total_nomination, nomination_sum + 5000 * PCX);
+    assert_eq!(total_vote_weight, vote_weight_sum);
 
     let mut nomination_sum = 0;
     let mut vote_weight_sum = 0;
@@ -314,21 +357,9 @@ async fn main() -> Result<()> {
         "Validator Nomination Sum (ValidatorLedgers Storage): {}, Validator Vote Weight Sum (ValidatorLedgers Storage): {}",
         nomination_sum, vote_weight_sum,
     );
-
-    let (total_nomination, total_vote_weight) = (
-        validator_ledgers
-            .iter()
-            .map(|(_, validator_ledger)| validator_ledger.total_nomination)
-            .sum::<Balance>(),
-        validator_ledgers
-            .iter()
-            .map(|(_, validator_ledger)| validator_ledger.last_total_vote_weight)
-            .sum::<Balance>(),
-    );
-    println!(
-        "Total Nomination: {}, Total Vote Weight: {}",
-        total_nomination, total_vote_weight
-    );
+    // The 5000 PCX nomination is from the 5 genesis nodes in 2.0 POA.
+    assert_eq!(total_nomination, nomination_sum + 5000 * PCX);
+    assert_eq!(total_vote_weight, vote_weight_sum);
 
     Ok(())
 }
