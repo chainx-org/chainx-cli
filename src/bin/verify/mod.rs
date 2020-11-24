@@ -188,13 +188,16 @@ async fn main() -> Result<()> {
                 println!("verify team account");
                 // The missing 5000 PCX of team account is used for the 5 genesis nodes in 2.0 POA stage.
                 assert_eq!(free_from_chain + 5000 * PCX, free, "team: {}", who);
+                sum += free_from_chain + 5000 * PCX;
             } else if who == treasury_account {
                 println!("verify treasury account");
                 // The missing 100 PCX of treasury account is used for the root account.
                 assert_eq!(free_from_chain + 100 * PCX, free, "treasury: {}", who);
+                sum += free_from_chain + 100 * PCX;
             } else if who == new_xbtc_pot {
                 println!("verify xbtc pot account");
                 assert_eq!(free_from_chain, free, "xbtc pot: {}", who);
+                sum += free_from_chain;
             } else {
                 // if free_from_chain != free {
                 //     println!(
@@ -205,8 +208,8 @@ async fn main() -> Result<()> {
                 //     );
                 // }
                 assert_eq!(free_from_chain, free, "{}", who);
+                sum += free_from_chain;
             }
-            sum += free_from_chain;
         } else {
             missing_cnt += 1;
             println!("[ERROR] Missing PCX balance of `{}`", who);
