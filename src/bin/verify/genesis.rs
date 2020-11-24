@@ -39,6 +39,7 @@ pub struct WellknownAccounts<AccountId> {
     pub legacy_council: AccountId,
     pub legacy_team: AccountId,
     pub legacy_pots: Vec<(AccountId, AccountId)>,
+    pub legacy_xbtc_pot: AccountId,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

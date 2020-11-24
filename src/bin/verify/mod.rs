@@ -15,7 +15,7 @@ use structopt::StructOpt;
 use subxt::system::System;
 
 use chainx_cli::runtime::{
-    primitives::{AccountId, Balance, BlockNumber},
+    primitives::{AccountId, AssetId, Balance, BlockNumber},
     xpallets::xassets::AssetType,
     ChainXRuntime,
 };
@@ -66,10 +66,32 @@ fn validator_for<'a, I: Iterator<Item = &'a (AccountId, AccountId)>>(
         .map(|(_, validator)| validator)
 }
 
+/// BTC asset in ChainX backed by the Mainnet Bitcoin.
+pub const X_BTC: AssetId = 1;
+
+/// Simple Asset reward pot account determiner.
+///
+/// Formula: `blake2_256(blake2_256(asset_id) + blake2_256(registered_block_number))`
+fn asset_reward_pot_account_for(asset_id: &AssetId) -> AccountId {
+    let id_hash = <ChainXRuntime as System>::Hashing::hash(&asset_id.to_le_bytes()[..]);
+
+    let registered_at = BlockNumber::default();
+    let registered_at_hash = <ChainXRuntime as System>::Hashing::hash(&registered_at.encode());
+
+    let id_slice = id_hash.as_ref();
+    let registered_at_slice = registered_at_hash.as_ref();
+
+    let mut buf = Vec::with_capacity(id_slice.len() + registered_at_slice.len());
+    buf.extend_from_slice(id_slice);
+    buf.extend_from_slice(registered_at_slice);
+
+    UncheckedFrom::unchecked_from(<ChainXRuntime as System>::Hashing::hash(&buf[..]))
+}
+
 /// Simple validator reward pot account determiner.
 ///
 /// Formula: `blake2_256(blake2_256(validator_pubkey) + blake2_256(registered_at))`
-fn reward_pot_account_for(validator: &AccountId) -> AccountId {
+fn validator_reward_pot_account_for(validator: &AccountId) -> AccountId {
     let validator_hash = <ChainXRuntime as System>::Hashing::hash(validator.as_ref());
 
     let registered_at = BlockNumber::default();
@@ -114,10 +136,17 @@ async fn main() -> Result<()> {
         legacy_team, vesting_account
     );
 
+    let legacy_xbtc_pot = genesis.balances.wellknown_accounts.legacy_xbtc_pot;
+    let new_xbtc_pot = asset_reward_pot_account_for(&X_BTC);
+    println!(
+        "legacy_xbtc_pot `{}` => new_xbtc_pot `{}`",
+        legacy_xbtc_pot, new_xbtc_pot
+    );
+
     let legacy_pots = genesis.balances.wellknown_accounts.legacy_pots;
     let mut new_pots = BTreeMap::new();
     for (legacy_pot, validator) in legacy_pots.clone() {
-        let new_pot = reward_pot_account_for(&validator);
+        let new_pot = validator_reward_pot_account_for(&validator);
         println!("validator `{}`", validator);
         println!("legacy_pot `{}` => new_pot `{}`", legacy_pot, new_pot);
         new_pots.insert(validator, new_pot);
@@ -141,6 +170,8 @@ async fn main() -> Result<()> {
             treasury_account.clone()
         } else if who == legacy_team {
             vesting_account.clone()
+        } else if who == legacy_xbtc_pot {
+            new_xbtc_pot.clone()
         } else if let Some(validator) = validator_for(&who, legacy_pots.iter()) {
             if let Some(new_pot) = new_pots.get(validator).cloned() {
                 new_pot
@@ -152,31 +183,30 @@ async fn main() -> Result<()> {
         };
 
         if let Some(account_info) = account_info.get(&who) {
+            let free_from_chain = account_info.data.free + account_info.data.reserved;
             if who == vesting_account {
+                println!("verify team account");
                 // The missing 5000 PCX of team account is used for the 5 genesis nodes in 2.0 POA stage.
-                assert_eq!(
-                    account_info.data.free + account_info.data.reserved + 5000 * PCX,
-                    free,
-                    "{}",
-                    who
-                );
+                assert_eq!(free_from_chain + 5000 * PCX, free, "team: {}", who);
             } else if who == treasury_account {
+                println!("verify treasury account");
                 // The missing 100 PCX of treasury account is used for the root account.
-                assert_eq!(
-                    account_info.data.free + account_info.data.reserved + 100 * PCX,
-                    free,
-                    "{}",
-                    who
-                );
+                assert_eq!(free_from_chain + 100 * PCX, free, "treasury: {}", who);
+            } else if who == new_xbtc_pot {
+                println!("verify xbtc pot account");
+                assert_eq!(free_from_chain, free, "xbtc pot: {}", who);
             } else {
-                assert_eq!(
-                    account_info.data.free + account_info.data.reserved,
-                    free,
-                    "{}",
-                    who
-                );
+                // if free_from_chain != free {
+                //     println!(
+                //         "[ERROR] who: {}, chain: {}, json: {}",
+                //         who,
+                //         free_from_chain,
+                //         free
+                //     );
+                // }
+                assert_eq!(free_from_chain, free, "{}", who);
             }
-            sum += account_info.data.free + account_info.data.reserved;
+            sum += free_from_chain;
         } else {
             missing_cnt += 1;
             println!("[ERROR] Missing PCX balance of `{}`", who);
