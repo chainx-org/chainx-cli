@@ -11,7 +11,7 @@ use crate::{
         },
         ChainXSigner,
     },
-    utils::{build_client, parse_account},
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// XStaking
@@ -128,11 +128,7 @@ impl XStaking {
                     validator_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let profile = client.validators(&validator_id, at).await?;
                     println!("ValidatorProfile of {:?}: {:#?}", validator_id, profile);
                 }
@@ -140,11 +136,7 @@ impl XStaking {
                     validator_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let ledgers = client.validator_ledgers(&validator_id, at).await?;
                     println!("ValidatorLedger of {:?}: {:#?}", validator_id, ledgers);
                 }
@@ -153,11 +145,7 @@ impl XStaking {
                     nominatee,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let ledgers = client.nominations(&nominator, &nominatee, at).await?;
                     println!(
                         "NominatorLedger of {:?} => {:?}: {:#?}",

@@ -3,7 +3,7 @@ use subxt::session::ValidatorsStoreExt;
 
 use crate::{
     runtime::{primitives::BlockNumber, ChainXSigner},
-    utils::build_client,
+    utils::{block_hash, build_client},
 };
 
 /// Session
@@ -25,11 +25,7 @@ impl Session {
 
         match self {
             Self::Validators { block_number } => {
-                let at = if let Some(number) = block_number {
-                    client.block_hash(Some(number.into())).await?
-                } else {
-                    None
-                };
+                let at = block_hash(&client, block_number).await?;
                 println!("{:#?}", client.validators(at).await?);
             }
             Self::SetKeys { keys } => {

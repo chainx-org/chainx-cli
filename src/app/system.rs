@@ -9,7 +9,7 @@ use crate::{
         primitives::{AccountId, BlockNumber},
         ChainXSigner,
     },
-    utils::{build_client, parse_account, read_code},
+    utils::{block_hash, build_client, parse_account, read_code},
 };
 
 /// System
@@ -36,11 +36,7 @@ impl System {
 
         match self {
             Self::AccountInfo { who, block_number } => {
-                let at = if let Some(number) = block_number {
-                    client.block_hash(Some(number.into())).await?
-                } else {
-                    None
-                };
+                let at = block_hash(&client, block_number).await?;
                 let account_info = client.account(&who, at).await?;
                 println!("AccountInfo of {:?}: {:#?}", who, account_info);
             }

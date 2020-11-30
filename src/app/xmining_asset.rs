@@ -9,7 +9,7 @@ use crate::{
         },
         ChainXSigner,
     },
-    utils::{build_client, parse_account},
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// XMingAsset
@@ -60,11 +60,7 @@ impl XMingAsset {
                     asset_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let asset_ledgers = client.asset_ledgers(asset_id, at).await?;
                     println!("AssetLedgers of {:?}: {:#?}", asset_id, asset_ledgers);
                 }
@@ -73,11 +69,7 @@ impl XMingAsset {
                     asset_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let miner_ledgers = client
                         .miner_ledgers(&account_id.into(), asset_id, at)
                         .await?;

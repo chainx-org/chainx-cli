@@ -9,7 +9,7 @@ use crate::{
         },
         ChainXSigner,
     },
-    utils::{build_client, parse_account},
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// XAssets
@@ -73,11 +73,7 @@ impl XAssets {
                     asset_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let asset_balance = client.asset_balance(&account_id, asset_id, at).await?;
                     println!("AssetBalance of {:?}: {:#?}", account_id, asset_balance);
                 }
@@ -85,11 +81,7 @@ impl XAssets {
                     asset_id,
                     block_number,
                 } => {
-                    let at = if let Some(number) = block_number {
-                        client.block_hash(Some(number.into())).await?
-                    } else {
-                        None
-                    };
+                    let at = block_hash(&client, block_number).await?;
                     let total_asset_balance = client.total_asset_balance(asset_id, at).await?;
                     println!(
                         "TotalAssetBalance of {:?}: {:#?}",

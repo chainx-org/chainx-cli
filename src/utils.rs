@@ -7,7 +7,7 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use subxt::ClientBuilder;
 
 use crate::runtime::{
-    primitives::{AccountId, Signature},
+    primitives::{AccountId, BlockNumber, Hash, Signature},
     ChainXClient, ChainXRuntime,
 };
 
@@ -57,4 +57,15 @@ pub async fn build_client<U: Into<String>>(url: U) -> Result<ChainXClient> {
         .set_url(url)
         .build()
         .await?)
+}
+
+pub(crate) async fn block_hash(
+    client: &ChainXClient,
+    block_number: Option<BlockNumber>,
+) -> Result<Option<Hash>> {
+    if let Some(number) = block_number {
+        Ok(client.block_hash(Some(number.into())).await?)
+    } else {
+        Ok(None)
+    }
 }
