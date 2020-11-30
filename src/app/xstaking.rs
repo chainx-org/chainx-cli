@@ -3,7 +3,7 @@ use structopt::StructOpt;
 
 use crate::{
     runtime::{
-        primitives::{AccountId, Balance},
+        primitives::{AccountId, Balance, BlockNumber},
         xpallets::xstaking::{
             BondCallExt, ChillCallExt, NominationsStoreExt, RebondCallExt, RegisterCallExt,
             SetValidatorCountCallExt, UnbondCallExt, ValidateCallExt, ValidatorLedgersStoreExt,
@@ -60,16 +60,22 @@ pub enum Storage {
     Validators {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         validator_id: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     ValidatorLedgers {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         validator_id: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     Nominations {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         nominator: AccountId,
         #[structopt(index = 2, long, parse(try_from_str = parse_account))]
         nominatee: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
 }
 
@@ -118,19 +124,41 @@ impl XStaking {
                 println!("set_validator_count result:{:#?}", result);
             }
             Self::Storage(storage) => match storage {
-                Storage::Validators { validator_id } => {
-                    let profile = client.validators(&validator_id, None).await?;
+                Storage::Validators {
+                    validator_id,
+                    block_number,
+                } => {
+                    let at = if let Some(number) = block_number {
+                        client.block_hash(Some(number.into())).await?
+                    } else {
+                        None
+                    };
+                    let profile = client.validators(&validator_id, at).await?;
                     println!("ValidatorProfile of {:?}: {:#?}", validator_id, profile);
                 }
-                Storage::ValidatorLedgers { validator_id } => {
-                    let ledgers = client.validator_ledgers(&validator_id, None).await?;
+                Storage::ValidatorLedgers {
+                    validator_id,
+                    block_number,
+                } => {
+                    let at = if let Some(number) = block_number {
+                        client.block_hash(Some(number.into())).await?
+                    } else {
+                        None
+                    };
+                    let ledgers = client.validator_ledgers(&validator_id, at).await?;
                     println!("ValidatorLedger of {:?}: {:#?}", validator_id, ledgers);
                 }
                 Storage::Nominations {
                     nominator,
                     nominatee,
+                    block_number,
                 } => {
-                    let ledgers = client.nominations(&nominator, &nominatee, None).await?;
+                    let at = if let Some(number) = block_number {
+                        client.block_hash(Some(number.into())).await?
+                    } else {
+                        None
+                    };
+                    let ledgers = client.nominations(&nominator, &nominatee, at).await?;
                     println!(
                         "NominatorLedger of {:?} => {:?}: {:#?}",
                         nominator, nominatee, ledgers

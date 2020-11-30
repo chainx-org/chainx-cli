@@ -3,7 +3,7 @@ use structopt::StructOpt;
 
 use crate::{
     runtime::{
-        primitives::{AccountId, AssetId},
+        primitives::{AccountId, AssetId, BlockNumber},
         xpallets::xmining_asset::{
             AssetLedgersStoreExt, ClaimCallExt, ClaimEventExt, MinerLedgersStoreExt,
         },
@@ -29,12 +29,16 @@ pub enum Storage {
     AssetLedgers {
         #[structopt(index = 1, long)]
         asset_id: AssetId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     MinerLedgers {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         account_id: AccountId,
         #[structopt(index = 2, long)]
         asset_id: AssetId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
 }
 
@@ -52,16 +56,30 @@ impl XMingAsset {
                 }
             }
             Self::Storage(storage) => match storage {
-                Storage::AssetLedgers { asset_id } => {
-                    let asset_ledgers = client.asset_ledgers(asset_id, None).await?;
+                Storage::AssetLedgers {
+                    asset_id,
+                    block_number,
+                } => {
+                    let at = if let Some(number) = block_number {
+                        client.block_hash(Some(number.into())).await?
+                    } else {
+                        None
+                    };
+                    let asset_ledgers = client.asset_ledgers(asset_id, at).await?;
                     println!("AssetLedgers of {:?}: {:#?}", asset_id, asset_ledgers);
                 }
                 Storage::MinerLedgers {
                     account_id,
                     asset_id,
+                    block_number,
                 } => {
+                    let at = if let Some(number) = block_number {
+                        client.block_hash(Some(number.into())).await?
+                    } else {
+                        None
+                    };
                     let miner_ledgers = client
-                        .miner_ledgers(&account_id.into(), asset_id, None)
+                        .miner_ledgers(&account_id.into(), asset_id, at)
                         .await?;
                     println!("MinerLedgers of {:?}: {:#?}", asset_id, miner_ledgers);
                 }

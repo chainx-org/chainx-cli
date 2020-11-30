@@ -1,7 +1,10 @@
 use anyhow::Result;
 use subxt::session::ValidatorsStoreExt;
 
-use crate::{runtime::ChainXSigner, utils::build_client};
+use crate::{
+    runtime::{primitives::BlockNumber, ChainXSigner},
+    utils::build_client,
+};
 
 /// Session
 #[derive(structopt::StructOpt, Debug)]
@@ -10,7 +13,10 @@ pub enum Session {
         #[structopt(index = 1, long)]
         keys: String,
     },
-    Validators,
+    Validators {
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
+    },
 }
 
 impl Session {
@@ -18,8 +24,13 @@ impl Session {
         let client = build_client(url).await?;
 
         match self {
-            Self::Validators => {
-                println!("{:#?}", client.validators(None).await?);
+            Self::Validators { block_number } => {
+                let at = if let Some(number) = block_number {
+                    client.block_hash(Some(number.into())).await?
+                } else {
+                    None
+                };
+                println!("{:#?}", client.validators(at).await?);
             }
             Self::SetKeys { keys } => {
                 let _ = keys;

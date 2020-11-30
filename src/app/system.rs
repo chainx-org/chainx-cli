@@ -5,7 +5,10 @@ use structopt::StructOpt;
 use subxt::system::{AccountStoreExt, SetCodeWithoutChecksCallExt};
 
 use crate::{
-    runtime::{primitives::AccountId, ChainXSigner},
+    runtime::{
+        primitives::{AccountId, BlockNumber},
+        ChainXSigner,
+    },
     utils::{build_client, parse_account, read_code},
 };
 
@@ -16,6 +19,8 @@ pub enum System {
     AccountInfo {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         who: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     /// Set code without checking.
     SetCodeWithoutChecks {
@@ -30,8 +35,13 @@ impl System {
         let client = build_client(url).await?;
 
         match self {
-            Self::AccountInfo { who } => {
-                let account_info = client.account(&who, None).await?;
+            Self::AccountInfo { who, block_number } => {
+                let at = if let Some(number) = block_number {
+                    client.block_hash(Some(number.into())).await?
+                } else {
+                    None
+                };
+                let account_info = client.account(&who, at).await?;
                 println!("AccountInfo of {:?}: {:#?}", who, account_info);
             }
             Self::SetCodeWithoutChecks { code } => {
