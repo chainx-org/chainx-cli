@@ -3,13 +3,13 @@ use structopt::StructOpt;
 
 use crate::{
     runtime::{
-        primitives::{AccountId, AssetId},
+        primitives::{AccountId, AssetId, BlockNumber},
         xpallets::xassets::{
             AssetBalanceStoreExt, TotalAssetBalanceStoreExt, TransferCallExt, TransferEventExt,
         },
         ChainXSigner,
     },
-    utils::{build_client, parse_account},
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// XAssets
@@ -37,10 +37,14 @@ pub enum Storage {
         account_id: AccountId,
         #[structopt(index = 2, long)]
         asset_id: AssetId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     TotalAssetBalance {
         #[structopt(index = 1, long)]
         asset_id: AssetId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
 }
 
@@ -67,12 +71,18 @@ impl XAssets {
                 Storage::AssetBalance {
                     account_id,
                     asset_id,
+                    block_number,
                 } => {
-                    let asset_balance = client.asset_balance(&account_id, asset_id, None).await?;
+                    let at = block_hash(&client, block_number).await?;
+                    let asset_balance = client.asset_balance(&account_id, asset_id, at).await?;
                     println!("AssetBalance of {:?}: {:#?}", account_id, asset_balance);
                 }
-                Storage::TotalAssetBalance { asset_id } => {
-                    let total_asset_balance = client.total_asset_balance(asset_id, None).await?;
+                Storage::TotalAssetBalance {
+                    asset_id,
+                    block_number,
+                } => {
+                    let at = block_hash(&client, block_number).await?;
+                    let total_asset_balance = client.total_asset_balance(asset_id, at).await?;
                     println!(
                         "TotalAssetBalance of {:?}: {:#?}",
                         asset_id, total_asset_balance

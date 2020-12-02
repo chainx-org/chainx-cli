@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     fmt::{self, Debug},
     marker::PhantomData,
 };
@@ -124,6 +125,12 @@ pub struct NominationsStore<'a, T: XStaking> {
     pub nominatee: &'a T::AccountId,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Store, Encode)]
+pub struct LocksStore<'a, T: XStaking> {
+    #[store(returns = BTreeMap<LockedType, BalanceOf<T>>)]
+    pub staker: &'a T::AccountId,
+}
+
 pub type BalanceOf<T> = <T as Balances>::Balance;
 
 pub type VoteWeight = u128;
@@ -187,4 +194,14 @@ pub struct Unbonded<Balance, BlockNumber> {
     pub value: Balance,
     /// Block number at which point it'll be unlocked.
     pub locked_until: BlockNumber,
+}
+
+/// Detailed types of reserved balances in Staking.
+#[derive(PartialEq, PartialOrd, Ord, Eq, Clone, Copy, Encode, Decode, Debug)]
+pub enum LockedType {
+    /// Locked balances when nominator calls `bond`.
+    Bonded,
+    /// The locked balances transition from `Bonded` into `BondedWithdrawal` state
+    /// when nominator calls `unbond`.
+    BondedWithdrawal,
 }

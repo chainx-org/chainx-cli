@@ -3,15 +3,15 @@ use structopt::StructOpt;
 
 use crate::{
     runtime::{
-        primitives::{AccountId, Balance},
+        primitives::{AccountId, Balance, BlockNumber},
         xpallets::xstaking::{
-            BondCallExt, ChillCallExt, NominationsStoreExt, RebondCallExt, RegisterCallExt,
-            SetValidatorCountCallExt, UnbondCallExt, ValidateCallExt, ValidatorLedgersStoreExt,
-            ValidatorsStoreExt,
+            BondCallExt, ChillCallExt, LocksStoreExt, NominationsStoreExt, RebondCallExt,
+            RegisterCallExt, SetValidatorCountCallExt, UnbondCallExt, ValidateCallExt,
+            ValidatorLedgersStoreExt, ValidatorsStoreExt,
         },
         ChainXSigner,
     },
-    utils::{build_client, parse_account},
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// XStaking
@@ -60,16 +60,28 @@ pub enum Storage {
     Validators {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         validator_id: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     ValidatorLedgers {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         validator_id: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
     Nominations {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         nominator: AccountId,
         #[structopt(index = 2, long, parse(try_from_str = parse_account))]
         nominatee: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
+    },
+    Locks {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        staker: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
 }
 
@@ -118,23 +130,38 @@ impl XStaking {
                 println!("set_validator_count result:{:#?}", result);
             }
             Self::Storage(storage) => match storage {
-                Storage::Validators { validator_id } => {
-                    let profile = client.validators(&validator_id, None).await?;
-                    println!("ValidatorProfile of {:?}: {:#?}", validator_id, profile);
+                Storage::Validators {
+                    validator_id,
+                    block_number,
+                } => {
+                    let at = block_hash(&client, block_number).await?;
+                    let profile = client.validators(&validator_id, at).await?;
+                    println!("{:?}: {:#?}", validator_id, profile);
                 }
-                Storage::ValidatorLedgers { validator_id } => {
-                    let ledgers = client.validator_ledgers(&validator_id, None).await?;
-                    println!("ValidatorLedger of {:?}: {:#?}", validator_id, ledgers);
+                Storage::ValidatorLedgers {
+                    validator_id,
+                    block_number,
+                } => {
+                    let at = block_hash(&client, block_number).await?;
+                    let ledgers = client.validator_ledgers(&validator_id, at).await?;
+                    println!("{:?}: {:#?}", validator_id, ledgers);
                 }
                 Storage::Nominations {
                     nominator,
                     nominatee,
+                    block_number,
                 } => {
-                    let ledgers = client.nominations(&nominator, &nominatee, None).await?;
-                    println!(
-                        "NominatorLedger of {:?} => {:?}: {:#?}",
-                        nominator, nominatee, ledgers
-                    );
+                    let at = block_hash(&client, block_number).await?;
+                    let ledgers = client.nominations(&nominator, &nominatee, at).await?;
+                    println!("{:?} => {:?}: {:#?}", nominator, nominatee, ledgers);
+                }
+                Storage::Locks {
+                    staker,
+                    block_number,
+                } => {
+                    let at = block_hash(&client, block_number).await?;
+                    let locks = client.locks(&staker, at).await?;
+                    println!("{:?}: {:#?}", staker, locks);
                 }
             },
         }
