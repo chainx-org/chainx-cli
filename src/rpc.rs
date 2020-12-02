@@ -12,7 +12,7 @@ use sp_core::{
 };
 use subxt::system::AccountInfo;
 
-use chainx_cli::runtime::{
+use crate::runtime::{
     primitives::{AccountId, AssetId, Balance, BlockNumber, Hash},
     xpallets::{
         xassets::AssetType,

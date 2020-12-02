@@ -1,5 +1,4 @@
 mod genesis;
-mod rpc;
 
 use std::path::PathBuf;
 
@@ -20,12 +19,10 @@ use chainx_cli::runtime::{
     ChainXRuntime,
 };
 
-use self::{
-    genesis::{
-        read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
-    },
-    rpc::Rpc,
+use self::genesis::{
+    read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
 };
+use chainx_cli::rpc::Rpc;
 use frame_support::sp_std::collections::btree_map::BTreeMap;
 
 /// The decimals of PCX.
