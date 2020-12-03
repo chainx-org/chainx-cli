@@ -327,4 +327,17 @@ impl Rpc {
             })
             .collect())
     }
+
+    pub async fn get_nominations_rpc(
+        &self,
+        who: AccountId,
+        hash: Option<Hash>,
+    ) -> Result<BTreeMap<AccountId, NominatorLedger<String, String, BlockNumber>>> {
+        let params = Params::Array(vec![to_json_value(who)?, to_json_value(hash)?]);
+        let data: BTreeMap<AccountId, NominatorLedger<String, String, BlockNumber>> = self
+            .client
+            .request("xstaking_getNominationByAccount", params)
+            .await?;
+        Ok(data)
+    }
 }
