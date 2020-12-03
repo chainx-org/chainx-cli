@@ -185,7 +185,10 @@ impl XStaking {
                 } => {
                     let at = block_hash(&client, block_number).await?;
                     let locks = client.locks(&staker, at).await?;
-                    println!("{:?}: {:#?}", staker, locks);
+                    let total_locked = locks.values().sum::<u128>();
+                    println!("Locks for {:?}", staker);
+                    println!("Details: {:#?}", locks);
+                    println!("total locked in Staking: {}", total_locked);
                 }
             },
         }
