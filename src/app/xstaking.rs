@@ -52,6 +52,12 @@ pub enum XStaking {
         #[structopt(index = 1, long)]
         new: u32,
     },
+    GetDividend {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        who: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
+    },
     Storage(Storage),
 }
 
@@ -87,7 +93,7 @@ pub enum Storage {
 
 impl XStaking {
     pub async fn run(self, url: String, signer: ChainXSigner) -> Result<()> {
-        let client = build_client(url).await?;
+        let client = build_client(url.clone()).await?;
 
         match self {
             Self::Register {
@@ -128,6 +134,12 @@ impl XStaking {
             Self::SetValidatorCount { new } => {
                 let result = client.set_validator_count_and_watch(&signer, new).await?;
                 println!("set_validator_count result:{:#?}", result);
+            }
+            Self::GetDividend { who, block_number } => {
+                let rpc = crate::rpc::Rpc::new(url).await?;
+                let at = block_hash(&client, block_number).await?;
+                let dividend = rpc.get_staking_dividend(who.clone(), at).await?;
+                println!("Staking dividend of {:?}: {:#?}", who, dividend);
             }
             Self::Storage(storage) => match storage {
                 Storage::Validators {

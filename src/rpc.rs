@@ -305,4 +305,26 @@ impl Rpc {
         }
         Ok(validator_ledgers)
     }
+
+    pub async fn get_staking_dividend(
+        &self,
+        who: AccountId,
+        hash: Option<Hash>,
+    ) -> Result<BTreeMap<AccountId, Balance>> {
+        let params = Params::Array(vec![to_json_value(who)?, to_json_value(hash)?]);
+        let data: BTreeMap<AccountId, String> = self
+            .client
+            .request("xstaking_getDividendByAccount", params)
+            .await?;
+        Ok(data
+            .into_iter()
+            .map(|(v, d)| {
+                (
+                    v,
+                    d.parse::<Balance>()
+                        .expect("Parse Balance from string failed"),
+                )
+            })
+            .collect())
+    }
 }
