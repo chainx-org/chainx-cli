@@ -5,6 +5,7 @@ use std::{
 };
 
 use codec::{Decode, Encode};
+use serde::{Deserialize, Serialize};
 use subxt::{
     balances::{Balances, BalancesEventsDecoder},
     module,
@@ -175,7 +176,8 @@ pub struct ValidatorLedger<Balance, VoteWeight, BlockNumber> {
 }
 
 /// Vote weight properties of nominator.
-#[derive(PartialEq, Eq, Clone, Default, Debug, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Default, Debug, Encode, Decode, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NominatorLedger<Balance, VoteWeight, BlockNumber> {
     /// The amount of vote.
     pub nomination: Balance,
@@ -188,7 +190,8 @@ pub struct NominatorLedger<Balance, VoteWeight, BlockNumber> {
 }
 
 /// Type for noting when the unbonded fund can be withdrawn.
-#[derive(PartialEq, Eq, Clone, Debug, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Debug, Encode, Decode, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Unbonded<Balance, BlockNumber> {
     /// Amount of funds to be unlocked.
     pub value: Balance,

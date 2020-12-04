@@ -1,5 +1,4 @@
 mod genesis;
-mod rpc;
 
 use std::path::PathBuf;
 
@@ -14,17 +13,17 @@ use sp_runtime::{
 use structopt::StructOpt;
 use subxt::system::System;
 
-use chainx_cli::runtime::{
-    primitives::{AccountId, AssetId, Balance, BlockNumber},
-    xpallets::xassets::AssetType,
-    ChainXRuntime,
+use chainx_cli::{
+    rpc::Rpc,
+    runtime::{
+        primitives::{AccountId, AssetId, Balance, BlockNumber},
+        xpallets::xassets::AssetType,
+        ChainXRuntime,
+    },
 };
 
-use self::{
-    genesis::{
-        read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
-    },
-    rpc::Rpc,
+use self::genesis::{
+    read_genesis_json, FreeBalanceInfo, Nomination, NominatorInfo, ValidatorInfo, XBtcMiner,
 };
 use frame_support::sp_std::collections::btree_map::BTreeMap;
 
