@@ -1,5 +1,6 @@
 use anyhow::Result;
 use structopt::StructOpt;
+use subxt::system::AccountStoreExt;
 
 use crate::{
     runtime::{
@@ -59,6 +60,12 @@ pub enum XStaking {
         block_number: Option<BlockNumber>,
     },
     GetNomination {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        who: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
+    },
+    CheckStaker {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         who: AccountId,
         #[structopt(long)]
@@ -146,6 +153,22 @@ impl XStaking {
                 let at = block_hash(&client, block_number).await?;
                 let dividend = rpc.get_staking_dividend(who.clone(), at).await?;
                 println!("Staking dividend of {:?}: {:#?}", who, dividend);
+            }
+            Self::CheckStaker { who, block_number } => {
+                let rpc = crate::rpc::Rpc::new(url).await?;
+                let at = block_hash(&client, block_number).await?;
+
+                let nominations = rpc.get_nominations_rpc(who.clone(), at).await?;
+                println!("Nominations of {:?}: {:#?}", who, nominations);
+
+                let locks = client.locks(&who, at).await?;
+                let total_locked = locks.values().sum::<u128>();
+                println!("Locks for {:?}", who);
+                println!("Details: {:#?}", locks);
+                println!("total locked in Staking: {}", total_locked);
+
+                let account_info = client.account(&who, at).await?;
+                println!("AccountInfo of {:?}: {:#?}", who, account_info);
             }
             Self::GetNomination { who, block_number } => {
                 let rpc = crate::rpc::Rpc::new(url).await?;
