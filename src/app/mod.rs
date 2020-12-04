@@ -79,10 +79,11 @@ pub struct App {
     #[structopt(long, default_value = "ws://127.0.0.1:8087")]
     pub url: String,
 
-    #[cfg(feature = "sc-cli")]
-    /// The network type ('substrate' or `chainx`)
-    #[structopt(long)]
-    pub network: Option<sp_core::crypto::Ss58AddressFormat>,
+    /// Ss58 Address version of the network.
+    ///
+    /// 44 for ChainX mainnet, 42 for Substrate.
+    #[structopt(long, default_value = "44")]
+    pub ss58_prefix: sp_core::crypto::Ss58AddressFormat,
 
     #[structopt(subcommand)]
     pub command: Cmd,
@@ -100,11 +101,14 @@ impl App {
     }
 
     pub async fn run(self) -> Result<()> {
+        sp_core::crypto::set_default_ss58_version(self.ss58_prefix);
+
         let signer = if let Some(ref uri) = self.get_uri() {
             as_sr25519_signer(uri)?
         } else {
             self.builtin_signer()
         };
+
         match self.command {
             Cmd::Balances(balances) => balances.run(self.url, signer).await?,
             Cmd::Session(session) => session.run(self.url, signer).await?,
@@ -119,7 +123,7 @@ impl App {
                     sc_cli::utils::print_from_uri::<sp_core::sr25519::Pair>(
                         uri,
                         None,
-                        self.network,
+                        Some(self.ss58_prefix),
                         sc_cli::OutputType::Text,
                     );
                 }

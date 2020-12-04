@@ -7,6 +7,8 @@ use chainx_cli::{block_hash, build_client, parse_account};
 async fn main() -> Result<()> {
     env_logger::init();
 
+    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::ChainXAccount);
+
     // let url = "ws://116.62.46.8:8087";
     let url = "ws://127.0.0.1:8087";
     let block_number: u32 = 120_000;

@@ -7,7 +7,6 @@ use chainx_cli::{
         xpallets::xstaking::{LockedType, LocksStoreExt},
     },
 };
-use sp_core::crypto::Ss58AddressFormat;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -20,8 +19,11 @@ struct App {
     #[structopt(long)]
     pub block_number: Option<BlockNumber>,
 
+    /// Ss58 Address version of the network.
+    ///
+    /// 44 for ChainX mainnet, 42 for Substrate.
     #[structopt(long, default_value = "44")]
-    pub ss58_prefix: u32,
+    pub ss58_prefix: sp_core::crypto::Ss58AddressFormat,
 }
 
 #[async_std::main]
@@ -32,13 +34,7 @@ async fn main() -> Result<()> {
 
     let url = "ws://116.62.46.8:8087";
 
-    let version: Ss58AddressFormat = if app.ss58_prefix == 44 {
-        Ss58AddressFormat::ChainXAccount
-    } else {
-        Ss58AddressFormat::SubstrateAccount
-    };
-
-    sp_core::crypto::set_default_ss58_version(version);
+    sp_core::crypto::set_default_ss58_version(app.ss58_prefix);
 
     let client = build_client(app.url.clone()).await?;
     let at = block_hash(&client, app.block_number).await?;
