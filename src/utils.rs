@@ -59,7 +59,7 @@ pub async fn build_client<U: Into<String>>(url: U) -> Result<ChainXClient> {
         .await?)
 }
 
-pub(crate) async fn block_hash(
+pub async fn block_hash(
     client: &ChainXClient,
     block_number: Option<BlockNumber>,
 ) -> Result<Option<Hash>> {
