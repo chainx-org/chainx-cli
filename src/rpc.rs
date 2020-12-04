@@ -17,7 +17,7 @@ use crate::runtime::{
     xpallets::{
         xassets::AssetType,
         xmining_asset::{AssetLedger, MinerLedger, MiningWeight},
-        xstaking::{NominatorLedger, ValidatorLedger, ValidatorProfile, VoteWeight},
+        xstaking::{NominatorLedger, Unbonded, ValidatorLedger, ValidatorProfile, VoteWeight},
     },
     ChainXRuntime,
 };
@@ -332,12 +332,41 @@ impl Rpc {
         &self,
         who: AccountId,
         hash: Option<Hash>,
-    ) -> Result<BTreeMap<AccountId, NominatorLedger<String, String, BlockNumber>>> {
+    ) -> Result<BTreeMap<AccountId, NominatorLedger<Balance, Balance, BlockNumber>>> {
         let params = Params::Array(vec![to_json_value(who)?, to_json_value(hash)?]);
         let data: BTreeMap<AccountId, NominatorLedger<String, String, BlockNumber>> = self
             .client
             .request("xstaking_getNominationByAccount", params)
             .await?;
-        Ok(data)
+        Ok(data
+            .into_iter()
+            .map(|(who, ledger)| {
+                (
+                    who,
+                    NominatorLedger::<Balance, Balance, BlockNumber> {
+                        nomination: ledger
+                            .nomination
+                            .parse::<Balance>()
+                            .expect("Parse Balance from string failed"),
+                        last_vote_weight: ledger
+                            .last_vote_weight
+                            .parse::<Balance>()
+                            .expect("Parse Balance from string failed"),
+                        unbonded_chunks: ledger
+                            .unbonded_chunks
+                            .into_iter()
+                            .map(|unlocking| Unbonded {
+                                value: unlocking
+                                    .value
+                                    .parse::<Balance>()
+                                    .expect("Parse Balance from string failed"),
+                                locked_until: unlocking.locked_until,
+                            })
+                            .collect(),
+                        last_vote_weight_update: ledger.last_vote_weight_update,
+                    },
+                )
+            })
+            .collect())
     }
 }
