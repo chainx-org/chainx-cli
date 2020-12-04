@@ -1,15 +1,7 @@
 use anyhow::Result;
-use subxt::{
-    balances::AccountData,
-    system::{AccountInfo, AccountStoreExt},
-};
+use subxt::system::AccountStoreExt;
 
-use chainx_cli::{block_hash, build_client, parse_account, rpc::Rpc};
-use frame_support::sp_std::collections::btree_map::BTreeMap;
-
-fn pretty_display(balance: u128) -> String {
-    format!("{}.{}", balance / 100_000_000, balance % 100_000_000)
-}
+use chainx_cli::{block_hash, build_client, parse_account};
 
 #[async_std::main]
 async fn main() -> Result<()> {
