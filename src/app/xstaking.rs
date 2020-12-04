@@ -3,6 +3,7 @@ use structopt::StructOpt;
 use subxt::system::AccountStoreExt;
 
 use crate::{
+    rpc::Rpc,
     runtime::{
         primitives::{AccountId, Balance, BlockNumber},
         xpallets::xstaking::{
@@ -149,13 +150,13 @@ impl XStaking {
                 println!("set_validator_count result:{:#?}", result);
             }
             Self::GetDividend { who, block_number } => {
-                let rpc = crate::rpc::Rpc::new(url).await?;
+                let rpc = Rpc::new(url).await?;
                 let at = block_hash(&client, block_number).await?;
                 let dividend = rpc.get_staking_dividend(who.clone(), at).await?;
                 println!("Staking dividend of {:?}: {:#?}", who, dividend);
             }
             Self::CheckStaker { who, block_number } => {
-                let rpc = crate::rpc::Rpc::new(url).await?;
+                let rpc = Rpc::new(url).await?;
                 let at = block_hash(&client, block_number).await?;
 
                 let nominations = rpc.get_nominations_rpc(who.clone(), at).await?;
@@ -171,7 +172,7 @@ impl XStaking {
                 println!("AccountInfo of {:?}: {:#?}", who, account_info);
             }
             Self::GetNomination { who, block_number } => {
-                let rpc = crate::rpc::Rpc::new(url).await?;
+                let rpc = Rpc::new(url).await?;
                 let at = block_hash(&client, block_number).await?;
                 let nominations = rpc.get_nominations_rpc(who.clone(), at).await?;
                 println!("Nominations of {:?}: {:#?}", who, nominations);
