@@ -50,26 +50,24 @@ async fn main() -> Result<()> {
         let total_locked = locks.values().sum::<u128>();
         total_unlocking += *locks.entry(LockedType::BondedWithdrawal).or_default();
         let account_data = info.data;
-        if total_locked > 0 {
-            if total_locked == account_data.misc_frozen && total_locked == account_data.fee_frozen {
-                println!(
-                    "[PASS] {}: total_locked: {}, misc_frozen: {}, locks: {:?}",
-                    who, total_locked, account_data.misc_frozen, locks
-                );
-            } else {
-                println!(
-                    "[ERROR] {}: total_locked: {}, misc_frozen: {}, fee_frozen: {}, locks: {:#?}",
-                    who, total_locked, account_data.misc_frozen, account_data.fee_frozen, locks
-                );
-            }
-            if account_data.free < account_data.misc_frozen {
-                total_negative += account_data.misc_frozen - account_data.free;
-                println!(
-                    "[ERROR] {} has negative usable: -{}",
-                    who,
-                    account_data.misc_frozen - account_data.free,
-                );
-            }
+        if total_locked == account_data.misc_frozen && total_locked == account_data.fee_frozen {
+            println!(
+                "[PASS] {}: total_locked: {}, misc_frozen: {}, locks: {:?}",
+                who, total_locked, account_data.misc_frozen, locks
+            );
+        } else {
+            println!(
+                "[ERROR] {}: total_locked: {}, misc_frozen: {}, fee_frozen: {}, locks: {:#?}",
+                who, total_locked, account_data.misc_frozen, account_data.fee_frozen, locks
+            );
+        }
+        if account_data.free < account_data.misc_frozen {
+            total_negative += account_data.misc_frozen - account_data.free;
+            println!(
+                "[ERROR] {} has negative usable: -{}",
+                who,
+                account_data.misc_frozen - account_data.free,
+            );
         }
     }
 
