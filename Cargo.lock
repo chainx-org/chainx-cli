@@ -6089,8 +6089,6 @@ dependencies = [
 [[package]]
 name = "substrate-subxt"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed693047c3c907a660aa97a71a30af33cec878316d75df60967d73b673ff4fd3"
 dependencies = [
  "frame-metadata",
  "frame-support",
@@ -6099,22 +6097,16 @@ dependencies = [
  "jsonrpsee",
  "log",
  "num-traits",
- "pallet-im-online",
  "pallet-indices",
  "pallet-staking",
  "parity-scale-codec",
- "sc-rpc-api",
  "serde",
  "serde_json",
  "sp-application-crypto",
- "sp-authority-discovery",
- "sp-consensus-babe",
  "sp-core",
- "sp-finality-grandpa",
  "sp-rpc",
  "sp-runtime",
  "sp-std",
- "sp-transaction-pool",
  "sp-version",
  "substrate-subxt-proc-macro",
  "thiserror",
@@ -6124,8 +6116,6 @@ dependencies = [
 [[package]]
 name = "substrate-subxt-proc-macro"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74975f373430ec447afaeb2925f2bac77e113733b08263f4df75e0a0e5998090"
 dependencies = [
  "heck",
  "proc-macro-crate",

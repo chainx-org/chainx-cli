@@ -32,15 +32,14 @@ async fn main() -> Result<()> {
 
     let app = App::from_args();
 
-    let url = "ws://116.62.46.8:8087";
-
     sp_core::crypto::set_default_ss58_version(app.ss58_prefix);
 
     let client = build_client(app.url.clone()).await?;
     let at = block_hash(&client, app.block_number).await?;
 
-    let rpc = Rpc::new(url.clone()).await?;
+    let rpc = Rpc::new(app.url.clone()).await?;
 
+    println!("Running at Block #{:?}", at);
     let accounts_info = rpc.get_accounts_info(at).await?;
 
     let mut total_negative = 0;
