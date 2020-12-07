@@ -39,7 +39,10 @@ async fn main() -> Result<()> {
 
     let rpc = Rpc::new(app.url.clone()).await?;
 
-    println!("Running at Block #{:?}", at);
+    println!(
+        "Running at Block #{:?}",
+        at.unwrap_or(client.block_hash(None).await?.unwrap_or_default())
+    );
     let accounts_info = rpc.get_accounts_info(at).await?;
 
     let mut total_negative = 0;
