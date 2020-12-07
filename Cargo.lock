@@ -6089,6 +6089,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt"
 version = "0.13.0"
+source = "git+https://github.com/liuchengxu/substrate-subxt?branch=add-balances-locks#fb0b79fd42cc61d6716e8f1be487c3726116e7f2"
 dependencies = [
  "frame-metadata",
  "frame-support",
@@ -6116,6 +6117,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt-proc-macro"
 version = "0.13.0"
+source = "git+https://github.com/liuchengxu/substrate-subxt?branch=add-balances-locks#fb0b79fd42cc61d6716e8f1be487c3726116e7f2"
 dependencies = [
  "heck",
  "proc-macro-crate",
