@@ -6089,8 +6089,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed693047c3c907a660aa97a71a30af33cec878316d75df60967d73b673ff4fd3"
+source = "git+https://github.com/chainx-org/substrate-subxt#43f5b74dfcb41da1182ac49edf887669583f817f"
 dependencies = [
  "frame-metadata",
  "frame-support",
@@ -6124,8 +6123,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt-proc-macro"
 version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74975f373430ec447afaeb2925f2bac77e113733b08263f4df75e0a0e5998090"
+source = "git+https://github.com/chainx-org/substrate-subxt#43f5b74dfcb41da1182ac49edf887669583f817f"
 dependencies = [
  "heck",
  "proc-macro-crate",
