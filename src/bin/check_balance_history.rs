@@ -71,23 +71,34 @@ async fn main() -> Result<()> {
         let at = block_hash(&client, Some(blk)).await?;
         let account_info = client.account(&who, at).await?;
         let new_free = account_info.data.free;
-        if new_free > last_free {
-            let diff = new_free - last_free;
+        if new_free != last_free {
+            let (sign, diff) = if new_free > last_free {
+                ("[+]", new_free - last_free)
+            } else if new_free < last_free {
+                ("[-]", last_free - new_free)
+            } else {
+                unreachable!("They are not equal as just checked above")
+            };
+
             if diff != latest_diff {
-                println!("Block#{}, free {}, new diff[+]: {}", blk, new_free, diff);
+                println!(
+                    "{:>14}, free {}, new diff{}: {}",
+                    format!("Block#{}", blk),
+                    new_free,
+                    sign,
+                    diff
+                );
                 latest_diff = diff;
             } else {
-                println!("Block#{}, free {},     diff[+]: {}", blk, new_free, diff);
+                println!(
+                    "{:>14}, free {},     diff{}: {}",
+                    format!("Block#{}", blk),
+                    new_free,
+                    sign,
+                    diff
+                );
             }
-            last_free = new_free;
-        } else if new_free < last_free {
-            let diff = last_free - new_free;
-            if diff != latest_diff {
-                println!("Block#{}, free {}, new diff[-]: {}", blk, new_free, diff);
-                latest_diff = diff;
-            } else {
-                println!("Block#{}, free {},     diff[-]: {}", blk, new_free, diff);
-            }
+
             last_free = new_free;
         }
     }
