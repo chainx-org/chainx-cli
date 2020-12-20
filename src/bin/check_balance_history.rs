@@ -66,19 +66,19 @@ async fn main() -> Result<()> {
         if new_free > last_free {
             let diff = new_free - last_free;
             if diff != latest_diff {
-                println!("New free {} at Block {}, new diff: {}", new_free, i, diff);
+                println!("Block#{}, New free {}, new diff[+]: {}", i, new_free, diff);
                 latest_diff = diff;
             } else {
-                println!("New free {} at Block {}, diff: {}", new_free, i, diff);
+                println!("Block#{}, New free {},     diff[+]: {}", i, new_free, diff);
             }
             last_free = new_free;
         } else if new_free < last_free {
             let diff = last_free - new_free;
             if diff != latest_diff {
-                println!("New free {} at Block {}, new diff: {}", new_free, i, diff);
+                println!("Block#{}, New free {}, new diff[-]: {}", i, new_free, diff);
                 latest_diff = diff;
             } else {
-                println!("New free {} at Block {}, diff: {}", new_free, i, diff);
+                println!("Block#{}, New free {},     diff[-]: {}", i, new_free, diff);
             }
             last_free = new_free;
         }
