@@ -21,9 +21,13 @@ struct App {
     #[structopt(short, long, parse(try_from_str = parse_account))]
     pub who: AccountId,
 
+    /// The start block of the balance history.
+    #[structopt(long)]
+    pub start_block: Option<BlockNumber>,
+
     /// The end block of the balance history.
     #[structopt(long)]
-    pub block_number: Option<BlockNumber>,
+    pub end_block: Option<BlockNumber>,
 
     /// Ss58 Address version of the network.
     ///
@@ -53,8 +57,8 @@ async fn main() -> Result<()> {
     let client = build_client(app.url.clone()).await?;
 
     let who = app.who;
-
-    let block_number = if let Some(block_number) = app.block_number {
+    let start_block = app.start_block.unwrap_or(0);
+    let end_block = if let Some(block_number) = app.end_block {
         block_number
     } else {
         latest_block_number(&client).await?
@@ -63,26 +67,26 @@ async fn main() -> Result<()> {
     let mut last_free = 0;
     let mut latest_diff = 0;
 
-    for i in 0..=block_number {
-        let at = block_hash(&client, Some(i)).await?;
+    for blk in start_block..=end_block {
+        let at = block_hash(&client, Some(blk)).await?;
         let account_info = client.account(&who, at).await?;
         let new_free = account_info.data.free;
         if new_free > last_free {
             let diff = new_free - last_free;
             if diff != latest_diff {
-                println!("Block#{}, New free {}, new diff[+]: {}", i, new_free, diff);
+                println!("Block#{}, free {}, new diff[+]: {}", blk, new_free, diff);
                 latest_diff = diff;
             } else {
-                println!("Block#{}, New free {},     diff[+]: {}", i, new_free, diff);
+                println!("Block#{}, free {},     diff[+]: {}", blk, new_free, diff);
             }
             last_free = new_free;
         } else if new_free < last_free {
             let diff = last_free - new_free;
             if diff != latest_diff {
-                println!("Block#{}, New free {}, new diff[-]: {}", i, new_free, diff);
+                println!("Block#{}, free {}, new diff[-]: {}", blk, new_free, diff);
                 latest_diff = diff;
             } else {
-                println!("Block#{}, New free {},     diff[-]: {}", i, new_free, diff);
+                println!("Block#{}, free {},     diff[-]: {}", blk, new_free, diff);
             }
             last_free = new_free;
         }
