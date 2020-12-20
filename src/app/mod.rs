@@ -143,10 +143,7 @@ impl App {
     }
 
     fn builtin_signer(&self) -> ChainXSigner {
-        let signer = self
-            .signer
-            .clone()
-            .unwrap_or_else(|| BuiltinAccounts::Alice);
+        let signer = self.signer.clone().unwrap_or(BuiltinAccounts::Alice);
         let signer: AccountKeyring = signer.into();
         PairSigner::new(signer.pair())
     }

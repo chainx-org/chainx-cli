@@ -70,9 +70,7 @@ impl XMingAsset {
                     block_number,
                 } => {
                     let at = block_hash(&client, block_number).await?;
-                    let miner_ledgers = client
-                        .miner_ledgers(&account_id.into(), asset_id, at)
-                        .await?;
+                    let miner_ledgers = client.miner_ledgers(&account_id, asset_id, at).await?;
                     println!("MinerLedgers of {:?}: {:#?}", asset_id, miner_ledgers);
                 }
             },
