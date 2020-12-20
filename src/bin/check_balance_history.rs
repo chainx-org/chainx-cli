@@ -3,7 +3,7 @@ use chainx_cli::{
     block_hash, build_client, parse_account,
     runtime::{
         primitives::{AccountId, BlockNumber},
-        ChainXRuntime,
+        ChainXClient, ChainXRuntime,
     },
 };
 use sp_runtime::generic::{Block, SignedBlock};
@@ -34,6 +34,14 @@ struct App {
 
 pub type ChainBlock<T> = SignedBlock<Block<<T as System>::Header, <T as System>::Extrinsic>>;
 
+async fn latest_block_number(client: &ChainXClient) -> Result<BlockNumber> {
+    let latest_block: ChainBlock<ChainXRuntime> = client
+        .block(None::<<ChainXRuntime as System>::Hash>)
+        .await?
+        .expect("Failed to fetch latest block");
+    Ok(latest_block.block.header.number)
+}
+
 #[async_std::main]
 async fn main() -> Result<()> {
     env_logger::init();
@@ -49,11 +57,7 @@ async fn main() -> Result<()> {
     let block_number = if let Some(block_number) = app.block_number {
         block_number
     } else {
-        let latest_block: ChainBlock<ChainXRuntime> = client
-            .block(None::<<ChainXRuntime as System>::Hash>)
-            .await?
-            .expect("Failed to fetch latest block");
-        latest_block.block.header.number
+        latest_block_number(&client).await?
     };
 
     let mut last_free = 0;
