@@ -108,6 +108,7 @@ impl App {
         } else {
             self.builtin_signer()
         };
+
         match self.command {
             Cmd::Balances(balances) => balances.run(self.url, signer).await?,
             Cmd::Session(session) => session.run(self.url, signer).await?,
