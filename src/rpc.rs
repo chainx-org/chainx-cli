@@ -61,14 +61,10 @@ impl Rpc {
         let prefix = storage_prefix_for("System", "Account");
         let data = self.get_keys(StorageKey(prefix), hash).await?;
 
-        let keys = data
+        // System Account (32 bytes hex) + hash (16 bytes hex) = 48 bytes hex
+        let accounts = data
             .into_iter()
             .map(|x| hex::encode(x.0))
-            .collect::<Vec<_>>();
-
-        // System Account (32 bytes hex) + hash (16 bytes hex) = 48 bytes hex
-        let accounts = keys
-            .into_iter()
             .map(|x| format!("0x{}", &x[STORAGE_PREFIX_LEN + BLAKE_HASH_LEN..]))
             .collect::<Vec<_>>();
         Ok(accounts)
