@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use anyhow::Result;
 use chainx_cli::{
     block_hash, build_client, parse_account,
@@ -72,12 +74,10 @@ async fn main() -> Result<()> {
         let account_info = client.account(&who, at).await?;
         let new_free = account_info.data.free;
         if new_free != last_free {
-            let (sign, diff) = if new_free > last_free {
-                ("[+]", new_free - last_free)
-            } else if new_free < last_free {
-                ("[-]", last_free - new_free)
-            } else {
-                unreachable!("They are not equal as just checked above")
+            let (sign, diff) = match new_free.cmp(&last_free) {
+                Ordering::Greater => ("[+]", new_free - last_free),
+                Ordering::Less => ("[-]", last_free - new_free),
+                Ordering::Equal => unreachable!("They are not equal as just checked above"),
             };
 
             if diff != latest_diff {
