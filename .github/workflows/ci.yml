@@ -18,13 +18,13 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-        - name: Install Rust deps
-        - uses: actions-rs/toolchain@v1
-          with:
-            profile: minimal
-            toolchain: nightly-2020-09-30
-            override: true
-            components: rustfmt, clippy
+       - name: Install Rust deps
+       - uses: actions-rs/toolchain@v1
+         with:
+           profile: minimal
+           toolchain: nightly-2020-09-30
+           override: true
+           components: rustfmt, clippy
 
         - name: Rustfmt
         - uses: actions-rs/cargo@v1
