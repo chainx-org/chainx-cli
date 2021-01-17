@@ -3,49 +3,47 @@ on: [push, pull_request]
 name: Continuous integration
 
 jobs:
-  build_and_test:
-    runs-on: ubuntu-latest
+  rust:
+    name: Rust
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
 
     steps:
-     - name: Checkout repository
-       uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-     - name: Install Rust toolchain
-       uses: actions-rs/toolchain@v1
-       with:
-         toolchain: nightly-2020-09-30
-         target: wasm32-unknown-unknown
-         profile: minimal
-         override: true
-         components: rustfmt, rust-src, clippy
- 
-     - name: Cache
-       uses: actions/cache@v2
-       with:
-         path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly-2020-09-30
+        target: wasm32-unknown-unknown
+        profile: minimal
+        override: true
+        components: rustfmt, rust-src, clippy
 
-     - name: Rustfmt
-     - uses: actions-rs/cargo@v1
-       with:
-         command: fmt
-         args: --all -- --check
+    - if: matrix.os == 'ubuntu-latest'
+      run: sudo chown -R $(whoami):$(id -ng) ~/.cargo/
 
-     - name: Clippy
-     - uses: actions-rs/cargo@v1
-       with:
-         command: clippy
-         args: -- -D warnings
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-     - name: Check
-     - uses: actions-rs/cargo@v1
-       with:
-         command: check
+    - name: Format
+      run: cargo fmt --all -- --check
 
-     - name: Test
-     - uses: actions-rs/cargo@v1
-       with:
-         command: test
+    - name: Clippy
+      run: cargo clippy -- -D warnings
+
+    - name: Test
+      run: cargo test --verbose
+
+    - name: Compile
+      run: cargo test --no-run
