@@ -13,11 +13,11 @@ jobs:
      - name: Install Rust toolchain
        uses: actions-rs/toolchain@v1
        with:
-        toolchain: nightly-2020-09-30
-        target: wasm32-unknown-unknown
-        profile: minimal
-        override: true
-        components: rustfmt, rust-src, clippy
+         toolchain: nightly-2020-09-30
+         target: wasm32-unknown-unknown
+         profile: minimal
+         override: true
+         components: rustfmt, rust-src, clippy
  
      - name: Cache
        uses: actions/cache@v2
