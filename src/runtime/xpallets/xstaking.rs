@@ -6,12 +6,7 @@ use std::{
 
 use codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
-use subxt::{
-    balances::{Balances, BalancesEventsDecoder},
-    module,
-    system::{System, SystemEventsDecoder},
-    Call, Store,
-};
+use subxt::{balances::Balances, module, system::System, Call, Store};
 
 #[module]
 pub trait XStaking: Balances + System {}

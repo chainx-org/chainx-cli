@@ -10,10 +10,11 @@ use sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic};
 use subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
+    register_default_type_sizes,
     session::Session,
     sudo::Sudo,
-    system::System,
-    Client, PairSigner, Runtime,
+    system::{System, SystemEventTypeRegistry},
+    Client, EventTypeRegistry, PairSigner, Runtime,
 };
 
 use self::{
@@ -28,6 +29,15 @@ pub struct ChainXRuntime;
 impl Runtime for ChainXRuntime {
     type Signature = Signature;
     type Extra = DefaultExtra<Self>;
+    fn register_type_sizes(event_type_registry: &mut EventTypeRegistry<Self>) {
+        event_type_registry.with_system();
+        // event_type_registry.with_balances();
+        // event_type_registry.with_session();
+        // event_type_registry.with_staking();
+        // event_type_registry.with_contracts();
+        // event_type_registry.with_sudo();
+        register_default_type_sizes(event_type_registry);
+    }
 }
 
 impl System for ChainXRuntime {
