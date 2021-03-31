@@ -8,11 +8,11 @@ use sp_core::sr25519;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic};
 use subxt::{
-    balances::{AccountData, Balances},
+    balances::{AccountData, Balances, BalancesEventTypeRegistry},
     extrinsic::DefaultExtra,
     register_default_type_sizes,
-    session::Session,
-    sudo::Sudo,
+    session::{Session, SessionEventTypeRegistry},
+    sudo::{Sudo, SudoEventTypeRegistry},
     system::{System, SystemEventTypeRegistry},
     Client, EventTypeRegistry, PairSigner, Runtime,
 };
@@ -31,11 +31,10 @@ impl Runtime for ChainXRuntime {
     type Extra = DefaultExtra<Self>;
     fn register_type_sizes(event_type_registry: &mut EventTypeRegistry<Self>) {
         event_type_registry.with_system();
-        // event_type_registry.with_balances();
-        // event_type_registry.with_session();
+        event_type_registry.with_balances();
+        event_type_registry.with_session();
         // event_type_registry.with_staking();
-        // event_type_registry.with_contracts();
-        // event_type_registry.with_sudo();
+        event_type_registry.with_sudo();
         register_default_type_sizes(event_type_registry);
     }
 }
