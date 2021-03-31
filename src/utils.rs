@@ -55,6 +55,7 @@ where
 pub async fn build_client<U: Into<String>>(url: U) -> Result<ChainXClient> {
     Ok(ClientBuilder::<ChainXRuntime>::new()
         .set_url(url)
+        .skip_type_sizes_check()
         .build()
         .await?)
 }
