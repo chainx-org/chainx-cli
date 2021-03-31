@@ -2,9 +2,9 @@ use std::{collections::BTreeMap, marker::PhantomData};
 
 use codec::{Decode, Encode};
 use subxt::{
-    balances::{Balances, BalancesEventsDecoder},
+    balances::{Balances},
     module,
-    system::{System, SystemEventsDecoder},
+    system::{System},
     Call, Event, Store,
 };
 

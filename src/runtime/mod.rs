@@ -10,15 +10,20 @@ use sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic};
 use subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
+    register_default_type_sizes,
     session::Session,
     sudo::Sudo,
     system::System,
-    Client, PairSigner, Runtime,
+    Client, EventTypeRegistry, PairSigner, Runtime,
 };
 
 use self::{
     primitives::*,
-    xpallets::{xassets::XAssets, xmining_asset::XMiningAsset, xstaking::XStaking},
+    xpallets::{
+        xassets::{XAssets, XAssetsEventTypeRegistry},
+        xmining_asset::{XMiningAsset, XMiningAssetEventTypeRegistry},
+        xstaking::{XStaking, XStakingEventTypeRegistry},
+    },
 };
 
 /// Concrete type definitions for ChainX.
@@ -28,6 +33,14 @@ pub struct ChainXRuntime;
 impl Runtime for ChainXRuntime {
     type Signature = Signature;
     type Extra = DefaultExtra<Self>;
+
+    fn register_type_sizes(event_type_registry: &mut EventTypeRegistry<Self>) {
+        event_type_registry.with_x_assets();
+        event_type_registry.with_x_mining_asset();
+        event_type_registry.with_x_staking();
+
+        register_default_type_sizes(event_type_registry);
+    }
 }
 
 impl System for ChainXRuntime {
