@@ -22,11 +22,13 @@ pub enum Balances {
         #[structopt(index = 2)]
         value: u128,
     },
+    /// Inspect the balances storage items.
     Storage(Storage),
 }
 
 #[derive(Debug, StructOpt)]
 pub enum Storage {
+    /// Any liquidity locks on some account balances.
     Locks {
         #[structopt(index = 1, long, parse(try_from_str = parse_account))]
         who: AccountId,
