@@ -41,13 +41,13 @@ async fn latest_block_number(client: &ChainXClient) -> Result<BlockNumber> {
     Ok(latest_block.block.header.number)
 }
 
-fn save_snapshot<T, H>(height: H, value: &T) -> anyhow::Result<()>
+fn save_snapshot<B, V>(block_number: B, value: &V) -> anyhow::Result<()>
 where
-    H: Display,
-    T: ?Sized + serde::Serialize,
+    B: Display,
+    V: ?Sized + serde::Serialize,
 {
     let mut output = std::env::current_dir()?;
-    output.push(format!("chainx_balance_snapshot_{}.json", height));
+    output.push(format!("chainx_balance_snapshot_{}.json", block_number));
     let file = std::fs::OpenOptions::new()
         .create(true)
         .write(true)
