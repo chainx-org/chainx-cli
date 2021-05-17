@@ -148,15 +148,19 @@ async fn main() -> Result<()> {
     save_snapshot(block_number, "ksx_accounts", &ksx_accounts)?;
     save_snapshot(block_number, "dust_accounts", &dust_accounts)?;
 
-    println!(
-        "Dust accounts(less than 1PCX): {}, sum of dust balances: {}",
-        dust_count, dust_sum
-    );
+    println!("Total issuance: {}", total_issuance);
     println!(
         "Total accounts: {}",
         ksx_accounts.len() + dust_accounts.len()
     );
-    println!("Total issuance: {}", total_issuance);
+    println!("KSX accounts: {}", ksx_accounts.len());
+    println!("Dust accounts(less than 1PCX): {}", dust_count);
+    println!("Sum of dust balances: {}", dust_sum);
+
+    // Verify
+    let total_ksx = ksx_accounts.iter().map(|r| r.total).sum::<Balance>();
+
+    assert_eq!(total_ksx, total_issuance);
 
     Ok(())
 }
