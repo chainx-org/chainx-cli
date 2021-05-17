@@ -1,6 +1,16 @@
 use std::fmt::Display;
 
 use anyhow::Result;
+use structopt::StructOpt;
+
+use sp_core::crypto::Ss58AddressFormat;
+use sp_runtime::{
+    generic::{Block, SignedBlock},
+    traits::AccountIdConversion,
+    ModuleId,
+};
+use subxt::system::System;
+
 use chainx_cli::{
     block_hash, build_client,
     rpc::Rpc,
@@ -9,9 +19,6 @@ use chainx_cli::{
         ChainXClient, ChainXRuntime,
     },
 };
-use sp_runtime::generic::{Block, SignedBlock};
-use structopt::StructOpt;
-use subxt::system::System;
 
 #[derive(StructOpt, Debug)]
 #[structopt(author, about, no_version)]
@@ -41,13 +48,14 @@ async fn latest_block_number(client: &ChainXClient) -> Result<BlockNumber> {
     Ok(latest_block.block.header.number)
 }
 
-fn save_snapshot<B, V>(block_number: B, value: &V) -> anyhow::Result<()>
+fn save_snapshot<B, P, V>(block_number: B, prefix: P, value: &V) -> anyhow::Result<()>
 where
     B: Display,
+    P: Display,
     V: ?Sized + serde::Serialize,
 {
     let mut output = std::env::current_dir()?;
-    output.push(format!("chainx_balance_snapshot_{}.json", block_number));
+    output.push(format!("{}_snapshot_{}.json", prefix, block_number));
     let file = std::fs::OpenOptions::new()
         .create(true)
         .write(true)
@@ -69,7 +77,7 @@ async fn main() -> Result<()> {
 
     let app = App::from_args();
 
-    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::ChainXAccount);
+    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
 
     let client = build_client(app.url.clone()).await?;
 
@@ -85,27 +93,70 @@ async fn main() -> Result<()> {
 
     let account_info = rpc.get_accounts_info(at).await?;
 
+    /// Minimum balance to receive KSX airdrop.
+    const MINIMUM_AIRDROP_BALANCE: Balance = 100_000_000;
+
     let mut total_issuance = 0u128;
 
-    let balance_records = account_info
+    let mut dust_count = 0;
+    let mut dust_sum = 0;
+
+    let (mut ksx_accounts, dust_accounts): (
+        Vec<Option<BalanceRecord>>,
+        Vec<Option<BalanceRecord>>,
+    ) = account_info
         .into_iter()
         .map(|(id, info)| {
             let total = info.data.free + info.data.reserved;
 
             total_issuance += total;
 
-            BalanceRecord {
+            let maybe_ignored = BalanceRecord {
                 account_id: id,
                 free: info.data.free,
                 reserved: info.data.reserved,
                 total,
+            };
+
+            if total < MINIMUM_AIRDROP_BALANCE {
+                dust_count += 1;
+                dust_sum += total;
+                (None, Some(maybe_ignored))
+            } else {
+                (Some(maybe_ignored), None)
             }
         })
-        .collect::<Vec<_>>();
+        .unzip();
 
-    save_snapshot(block_number, &balance_records)?;
+    let treasury_account: AccountId = ModuleId(*b"pcx/trsy").into_account();
 
-    println!("Total accounts: {}", balance_records.len());
+    let (ksx_accounts, dust_accounts): (Vec<_>, Vec<_>) = (
+        ksx_accounts
+            .iter_mut()
+            .flatten()
+            .map(|record| {
+                if record.account_id == treasury_account {
+                    record.free += dust_sum;
+                    record.total += dust_sum;
+                }
+                record
+            })
+            .collect(),
+        dust_accounts.into_iter().flatten().collect(),
+    );
+
+    save_snapshot(block_number, "ksx_accounts", &ksx_accounts)?;
+    save_snapshot(block_number, "dust_accounts", &dust_accounts)?;
+
+    println!(
+        "Dust accounts(less than 1PCX): {}, sum of dust balances: {}",
+        dust_count, dust_sum
+    );
+    println!(
+        "Total accounts: {}",
+        ksx_accounts.len() + dust_accounts.len()
+    );
     println!("Total issuance: {}", total_issuance);
+
     Ok(())
 }
