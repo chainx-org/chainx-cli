@@ -1,10 +1,13 @@
 use anyhow::Result;
 use structopt::StructOpt;
-use subxt::balances::{TransferCallExt, TransferEventExt};
+use subxt::balances::{LocksStoreExt, TransferCallExt, TransferEventExt};
 
 use crate::{
-    runtime::{primitives::AccountId, ChainXSigner},
-    utils::{build_client, parse_account},
+    runtime::{
+        primitives::{AccountId, BlockNumber},
+        ChainXSigner,
+    },
+    utils::{block_hash, build_client, parse_account},
 };
 
 /// Balances
@@ -18,6 +21,19 @@ pub enum Balances {
         /// amount
         #[structopt(index = 2)]
         value: u128,
+    },
+    /// Inspect the balances storage items.
+    Storage(Storage),
+}
+
+#[derive(Debug, StructOpt)]
+pub enum Storage {
+    /// Any liquidity locks on some account balances.
+    Locks {
+        #[structopt(index = 1, long, parse(try_from_str = parse_account))]
+        who: AccountId,
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
     },
 }
 
@@ -36,6 +52,13 @@ impl Balances {
                     println!("Failed to find Balances::Transfer Event");
                 }
             }
+            Balances::Storage(storage) => match storage {
+                Storage::Locks { who, block_number } => {
+                    let at = block_hash(&client, block_number).await?;
+                    let locks = client.locks(&who, at).await?;
+                    println!("{:?}: {:#?}", who, locks);
+                }
+            },
         }
 
         Ok(())

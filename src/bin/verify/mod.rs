@@ -4,11 +4,9 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use codec::Encode;
-use frame_support::{PalletId, parameter_types};
+use frame_support::{parameter_types, PalletId};
 use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat, UncheckedFrom};
-use sp_runtime::{
-    traits::{AccountIdConversion, Hash},
-};
+use sp_runtime::traits::{AccountIdConversion, Hash};
 use structopt::StructOpt;
 use subxt::system::System;
 
