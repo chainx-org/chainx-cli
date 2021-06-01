@@ -41,7 +41,7 @@ async fn main() -> Result<()> {
         at.unwrap_or(client.block_hash(None).await?.unwrap_or_default())
     );
 
-    let genesis_hash = client.genesis().clone();
+    let genesis_hash = *client.genesis();
 
     let accounts_info = rpc.get_accounts_info(at).await?;
 
