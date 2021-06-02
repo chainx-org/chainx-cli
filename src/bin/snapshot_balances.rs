@@ -1,3 +1,7 @@
+//! Exports the entire state of balances at a certain block.
+//!
+//! Used for the SherpaX genesis.
+
 use std::fmt::Display;
 
 use anyhow::Result;
