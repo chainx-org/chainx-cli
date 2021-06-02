@@ -1,6 +1,12 @@
+//! Analyze the balance history of an account.
+
 use std::cmp::Ordering;
 
 use anyhow::Result;
+use sp_runtime::generic::{Block, SignedBlock};
+use structopt::StructOpt;
+use subxt::system::{AccountStoreExt, System};
+
 use chainx_cli::{
     block_hash, build_client, parse_account,
     runtime::{
@@ -8,9 +14,6 @@ use chainx_cli::{
         ChainXClient, ChainXRuntime,
     },
 };
-use sp_runtime::generic::{Block, SignedBlock};
-use structopt::StructOpt;
-use subxt::system::{AccountStoreExt, System};
 
 #[derive(StructOpt, Debug)]
 #[structopt(author, about, no_version)]
@@ -77,7 +80,7 @@ async fn main() -> Result<()> {
             let (sign, diff) = match new_free.cmp(&last_free) {
                 Ordering::Greater => ("[+]", new_free - last_free),
                 Ordering::Less => ("[-]", last_free - new_free),
-                Ordering::Equal => unreachable!("They are not equal as just checked above"),
+                Ordering::Equal => unreachable!("They are not equal as just checked above; qed"),
             };
 
             if diff != latest_diff {
