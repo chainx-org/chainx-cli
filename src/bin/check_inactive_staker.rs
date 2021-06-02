@@ -1,10 +1,19 @@
+//! Filter out all the stakers who never claims.
+//!
+//! Due to the change of block time (2s -> 6s) between ChainX 1.0 and 2.0,
+//! the vote weight inherited from ChainX 1.0 has a natural advantage compared
+//! with the fresh vote weight gained in ChainX 2.0, resulting in some stakers'
+//! reward decreased in a varying degree. This effect will be gradually vanished
+//! as more old 1.0 stakers claims their reward in ChainX 2.0.
+
 use anyhow::Result;
+use structopt::StructOpt;
+
 use chainx_cli::{
     block_hash, build_client,
     rpc::Rpc,
     runtime::{primitives::BlockNumber, xpallets::xstaking::LocksStoreExt},
 };
-use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(author, about, no_version)]

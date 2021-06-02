@@ -1,3 +1,6 @@
+//! Checks whether there are accounts that have negative usable balance,
+//! which definitly means something wrong in our system.
+
 use anyhow::Result;
 use chainx_cli::{
     block_hash, build_client,
