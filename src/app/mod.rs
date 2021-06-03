@@ -46,17 +46,17 @@ arg_enum! {
   }
 }
 
-impl Into<AccountKeyring> for BuiltinAccounts {
-    fn into(self) -> AccountKeyring {
-        match self {
-            Self::Alice => AccountKeyring::Alice,
-            Self::Bob => AccountKeyring::Bob,
-            Self::Charlie => AccountKeyring::Charlie,
-            Self::Dave => AccountKeyring::Dave,
-            Self::Eve => AccountKeyring::Eve,
-            Self::Ferdie => AccountKeyring::Ferdie,
-            Self::One => AccountKeyring::One,
-            Self::Two => AccountKeyring::Two,
+impl From<BuiltinAccounts> for AccountKeyring {
+    fn from(builtin_account: BuiltinAccounts) -> Self {
+        match builtin_account {
+            BuiltinAccounts::Alice => Self::Alice,
+            BuiltinAccounts::Bob => Self::Bob,
+            BuiltinAccounts::Charlie => Self::Charlie,
+            BuiltinAccounts::Dave => Self::Dave,
+            BuiltinAccounts::Eve => Self::Eve,
+            BuiltinAccounts::Ferdie => Self::Ferdie,
+            BuiltinAccounts::One => Self::One,
+            BuiltinAccounts::Two => Self::Two,
         }
     }
 }
