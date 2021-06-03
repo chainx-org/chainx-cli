@@ -1,12 +1,7 @@
 use std::marker::PhantomData;
 
 use codec::{Decode, Encode};
-use subxt::{
-    balances::{Balances, BalancesEventsDecoder},
-    module,
-    system::{System, SystemEventsDecoder},
-    Call, Event, Store,
-};
+use subxt::{balances::Balances, module, system::System, Call, Event, Store};
 
 use crate::runtime::primitives::AssetId;
 

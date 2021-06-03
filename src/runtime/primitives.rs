@@ -26,7 +26,7 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 pub type AccountIndex = u32;
 
 /// The address format for describing accounts.
-pub type Address = pallet_indices::address::Address<AccountId, AccountIndex>;
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
 
 /// Balance of an account.
 pub type Balance = u128;
