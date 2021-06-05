@@ -75,6 +75,12 @@ struct BalanceRecord {
     total: Balance,
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+struct KsxAccount {
+    account_id: AccountId,
+    free: Balance,
+}
+
 #[async_std::main]
 async fn main() -> Result<()> {
     env_logger::init();
@@ -143,7 +149,10 @@ async fn main() -> Result<()> {
                     record.free += dust_sum;
                     record.total += dust_sum;
                 }
-                record
+                KsxAccount {
+                    free: record.total,
+                    account_id: record.account_id.clone(),
+                }
             })
             .collect(),
         dust_accounts.into_iter().flatten().collect(),
@@ -162,7 +171,7 @@ async fn main() -> Result<()> {
     println!("Sum of dust balances: {}", dust_sum);
 
     // Verify
-    let total_ksx = ksx_accounts.iter().map(|r| r.total).sum::<Balance>();
+    let total_ksx = ksx_accounts.iter().map(|r| r.free).sum::<Balance>();
 
     assert_eq!(total_ksx, total_issuance);
 
