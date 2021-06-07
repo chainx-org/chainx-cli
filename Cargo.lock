@@ -6663,7 +6663,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt"
 version = "0.15.0"
-source = "git+https://github.com/chainx-org/substrate-subxt?branch=develop#0b5266826c4aa0a44e0b0502c46ccbea46991ae6"
+source = "git+https://github.com/chainx-org/substrate-subxt?branch=develop#6b80229a1358494772fa764e3b7da6edbaf8c997"
 dependencies = [
  "async-trait",
  "dyn-clone",
@@ -6695,7 +6695,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt-proc-macro"
 version = "0.15.0"
-source = "git+https://github.com/chainx-org/substrate-subxt?branch=develop#0b5266826c4aa0a44e0b0502c46ccbea46991ae6"
+source = "git+https://github.com/chainx-org/substrate-subxt?branch=develop#6b80229a1358494772fa764e3b7da6edbaf8c997"
 dependencies = [
  "async-trait",
  "heck",
@@ -7358,7 +7358,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04f8ab788026715fa63b31960869617cba39117e520eb415b0139543e325ab59"
 dependencies = [
  "cfg-if 0.1.10",
- "rand 0.7.3",
+ "rand 0.3.23",
  "static_assertions",
 ]
 
