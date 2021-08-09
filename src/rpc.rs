@@ -302,6 +302,16 @@ impl Rpc {
         Ok(validator_ledgers)
     }
 
+    pub async fn get_grandpa_round_state(
+        &self,
+        hash: Option<Hash>,
+    ) -> Result<crate::grandpa_rpc::ReportedRoundStates> {
+        let params = Params::Array(vec![to_json_value(hash)?]);
+        let data: crate::grandpa_rpc::ReportedRoundStates =
+            self.client.request("grandpa_roundState", params).await?;
+        Ok(data)
+    }
+
     pub async fn get_staking_dividend(
         &self,
         who: AccountId,

@@ -1,6 +1,7 @@
 pub mod balances;
 pub mod session;
 pub mod sudo;
+pub mod grandpa;
 pub mod system;
 pub mod xassets;
 pub mod xmining_asset;
@@ -20,6 +21,7 @@ pub enum Cmd {
     Session(session::Session),
     Sudo(sudo::Sudo),
     System(system::System),
+    Grandpa(grandpa::Grandpa),
 
     #[structopt(name = "xassets")]
     XAssets(xassets::XAssets),
@@ -114,6 +116,7 @@ impl App {
             Cmd::Session(session) => session.run(self.url, signer).await?,
             Cmd::Sudo(sudo) => sudo.run(self.url, signer).await?,
             Cmd::System(system) => system.run(self.url, signer).await?,
+            Cmd::Grandpa(grandpa) => grandpa.run(self.url, signer).await?,
             Cmd::XAssets(xassets) => xassets.run(self.url, signer).await?,
             Cmd::XMiningAsset(xmining_asset) => xmining_asset.run(self.url, signer).await?,
             Cmd::XStaking(xstaking) => xstaking.run(self.url, signer).await?,

@@ -1,4 +1,5 @@
 mod app;
+pub mod grandpa_rpc;
 pub mod rpc;
 pub mod runtime;
 mod serde;
