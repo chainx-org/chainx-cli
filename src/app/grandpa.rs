@@ -33,7 +33,7 @@ impl Grandpa {
                 let at = block_hash(&client, block_number).await?;
 
                 let rpc = Rpc::new(url).await?;
-                let round_states = rpc.get_grandpa_round_state(at).await?;
+                let round_states = rpc.get_grandpa_round_state().await?;
                 println!("Grandpa round states #{:?}: {:#?}", at, round_states);
             }
         }

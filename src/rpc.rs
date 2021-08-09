@@ -304,9 +304,8 @@ impl Rpc {
 
     pub async fn get_grandpa_round_state(
         &self,
-        hash: Option<Hash>,
     ) -> Result<crate::grandpa_rpc::ReportedRoundStates> {
-        let params = Params::Array(vec![to_json_value(hash)?]);
+        let params = Params::Array(vec![]);
         let data: crate::grandpa_rpc::ReportedRoundStates =
             self.client.request("grandpa_roundState", params).await?;
         Ok(data)
