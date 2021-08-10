@@ -34,7 +34,11 @@ impl Grandpa {
 
                 let rpc = Rpc::new(url).await?;
                 let round_states = rpc.get_grandpa_round_state().await?;
+
                 println!("Grandpa round states #{:?}: {:#?}", at, round_states);
+
+                let key_owner = rpc.get_session_key_owners(at).await?;
+                println!("key owner: {:?}", key_owner);
             }
         }
 

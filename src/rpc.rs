@@ -302,9 +302,31 @@ impl Rpc {
         Ok(validator_ledgers)
     }
 
-    pub async fn get_grandpa_round_state(
+    pub async fn get_session_key_owners(
         &self,
-    ) -> Result<crate::grandpa_rpc::ReportedRoundStates> {
+        hash: Option<Hash>,
+    ) -> Result<BTreeMap<(sp_runtime::KeyTypeId, Vec<u8>), Option<AccountId>>> {
+        let prefix = storage_prefix_for("Session", "KeyOwner");
+        let data = self.get_pairs(StorageKey(prefix), hash).await?;
+        let mut validator_ledgers = BTreeMap::new();
+        for (key, value) in data {
+            println!("initial key: {:?}", key);
+            let key = hex::encode(&key.0);
+            println!("key: {:?}", key);
+            let hashed_key_key = &key[STORAGE_PREFIX_LEN..];
+            let key = &hashed_key_key[TWOX_HASH_LEN..];
+
+            let decoded_key: (sp_runtime::KeyTypeId, Vec<u8>) =
+                Decode::decode(&mut key.as_bytes())?;
+
+            let validator_id: Option<AccountId> = Decode::decode(&mut value.0.as_slice())?;
+
+            validator_ledgers.insert(decoded_key, validator_id);
+        }
+        Ok(validator_ledgers)
+    }
+
+    pub async fn get_grandpa_round_state(&self) -> Result<crate::grandpa_rpc::ReportedRoundStates> {
         let params = Params::Array(vec![]);
         let data: crate::grandpa_rpc::ReportedRoundStates =
             self.client.request("grandpa_roundState", params).await?;
