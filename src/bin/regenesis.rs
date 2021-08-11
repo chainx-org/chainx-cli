@@ -17,7 +17,6 @@ use chainx_cli::{
     rpc::Rpc,
     runtime::{
         primitives::{AccountId, Balance, BlockNumber, Hash},
-        xpallets::xstaking::ReferralId,
         ChainXClient, ChainXRuntime,
     },
 };
@@ -91,7 +90,7 @@ pub struct NominatorInfo {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct ValidatorInfo {
     pub validator: AccountId,
-    pub referral_id: ReferralId,
+    pub referral_id: String,
     pub total_nomination: Balance,
 }
 
@@ -210,7 +209,7 @@ impl RegenesisBuilder {
                 .get(who)
                 .unwrap_or_else(|| panic!("ValidatorProfile does not exist for {}", who));
 
-            validator_profile.referral_id.clone()
+            String::from_utf8_lossy(&validator_profile.referral_id).to_string()
         };
 
         let mut sum_of_validators = 0u128;
