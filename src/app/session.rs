@@ -45,7 +45,11 @@ impl Session {
 
                 for validator in validators {
                     let keys = client.next_keys(&validator, at).await?;
-                    println!("{}: {:#?}", validator, keys);
+                    if let Some(keys) = keys {
+                        let referral_id =
+                            crate::utils::get_referral_id(&client, &validator, at).await?;
+                        println!("{}: {:#?}", referral_id, keys);
+                    }
                 }
             }
         }
