@@ -126,28 +126,25 @@ impl Rpc {
             .client
             .request("xstaking_getNominationByAccount", params)
             .await?;
+
+        let to_balance = |s: String| {
+            s.parse::<Balance>()
+                .expect("Parse Balance from string failed")
+        };
+
         Ok(data
             .into_iter()
             .map(|(who, ledger)| {
                 (
                     who,
                     NominatorLedger::<Balance, Balance, BlockNumber> {
-                        nomination: ledger
-                            .nomination
-                            .parse::<Balance>()
-                            .expect("Parse Balance from string failed"),
-                        last_vote_weight: ledger
-                            .last_vote_weight
-                            .parse::<Balance>()
-                            .expect("Parse Balance from string failed"),
+                        nomination: to_balance(ledger.nomination),
+                        last_vote_weight: to_balance(ledger.last_vote_weight),
                         unbonded_chunks: ledger
                             .unbonded_chunks
                             .into_iter()
                             .map(|unlocking| Unbonded {
-                                value: unlocking
-                                    .value
-                                    .parse::<Balance>()
-                                    .expect("Parse Balance from string failed"),
+                                value: to_balance(unlocking.value),
                                 locked_until: unlocking.locked_until,
                             })
                             .collect(),
