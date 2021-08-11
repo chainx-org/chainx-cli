@@ -89,7 +89,7 @@ pub struct NominatorInfo {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct ValidatorInfo {
-    pub validator: AccountId,
+    pub who: AccountId,
     pub referral_id: String,
     pub total_nomination: Balance,
 }
@@ -221,7 +221,7 @@ impl RegenesisBuilder {
                 sum_of_validators += v.total_nomination;
                 ValidatorInfo {
                     referral_id: get_referral_id(&k),
-                    validator: k,
+                    who: k,
                     total_nomination: v.total_nomination,
                 }
             })
