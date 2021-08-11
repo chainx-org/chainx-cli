@@ -146,8 +146,7 @@ impl RegenesisBuilder {
 
         let xbtc_accounts: Vec<FreeBalanceInfo> = asset_balance
             .into_iter()
-            .filter_map(|(who, mut asset_info)| {
-                asset_info.retain(|&k, _| k == XBTC_ASSET_ID);
+            .filter_map(|(who, asset_info)| {
                 if let Some(xbtc_asset) = asset_info.get(&XBTC_ASSET_ID) {
                     let xbtc_amount = xbtc_asset.values().sum();
                     if xbtc_amount > 0 {
