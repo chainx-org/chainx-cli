@@ -1,6 +1,6 @@
-//! Exports the entire state of balances at a certain block.
+//! Exports the neccessary state for the regenesis purpose.
 //!
-//! Used for the SherpaX genesis.
+//! Used for the ChainX 2.0 regenesis.
 
 use std::path::Path;
 
@@ -70,38 +70,38 @@ pub struct RegenesisBuilder {
 }
 
 // Can be used for representing the free balance of PCX and XBTC.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FreeBalanceInfo {
     pub free: Balance,
     pub who: AccountId,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Nomination {
     pub nominee: AccountId,
     pub nomination: Balance,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct NominatorInfo {
     pub nominator: AccountId,
     pub nominations: Vec<Nomination>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct ValidatorInfo {
     pub validator: AccountId,
     pub referral_id: ReferralId,
     pub total_nomination: Balance,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct XStakingParams {
     pub validators: Vec<ValidatorInfo>,
     pub nominators: Vec<NominatorInfo>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FullParams {
     pub balances: Vec<FreeBalanceInfo>,
     pub xassets: Vec<FreeBalanceInfo>,
@@ -171,6 +171,8 @@ impl RegenesisBuilder {
     async fn collect_xstaking(&self) -> Result<XStakingParams> {
         let nominations = self.rpc.get_nominations(self.at).await?;
 
+        let mut sum_of_nominators = 0u128;
+
         // Extract the amount of each nomination record.
         let nominators = nominations
             .into_iter()
@@ -179,6 +181,7 @@ impl RegenesisBuilder {
                     .into_iter()
                     .filter_map(|(nominee, nominator_ledger)| {
                         if nominator_ledger.nomination > 0 {
+                            sum_of_nominators += nominator_ledger.nomination;
                             Some(Nomination {
                                 nominee,
                                 nomination: nominator_ledger.nomination,
@@ -211,16 +214,24 @@ impl RegenesisBuilder {
             validator_profile.referral_id.clone()
         };
 
+        let mut sum_of_validators = 0u128;
         // Extract the total nomination of each validator, for verification purpose.
         let validator_ledgers = self.rpc.get_validator_ledgers(self.at).await?;
         let validators = validator_ledgers
             .into_iter()
-            .map(|(k, v)| ValidatorInfo {
-                referral_id: get_referral_id(&k),
-                validator: k,
-                total_nomination: v.total_nomination,
+            .map(|(k, v)| {
+                sum_of_validators += v.total_nomination;
+                ValidatorInfo {
+                    referral_id: get_referral_id(&k),
+                    validator: k,
+                    total_nomination: v.total_nomination,
+                }
             })
             .collect::<Vec<_>>();
+
+        println!("sum_of_nominators: {}", sum_of_nominators);
+        println!("sum_of_validators: {}", sum_of_validators);
+        assert_eq!(sum_of_validators, sum_of_nominators);
 
         Ok(XStakingParams {
             validators,
@@ -229,10 +240,12 @@ impl RegenesisBuilder {
     }
 
     async fn build(&self) -> Result<FullParams> {
-        let (balances, _totol_pcx_issuance) = self.collect_accounts().await?;
         // TODO: verify
+        let (balances, total_pcx_issuance) = self.collect_accounts().await?;
+        println!("total issuance of PCX: {}", total_pcx_issuance);
 
-        let (xassets, _total_xbtc_issuance) = self.collect_xbtc_accounts().await?;
+        let (xassets, total_xbtc_issuance) = self.collect_xbtc_accounts().await?;
+        println!("total issuance of XBTC: {}", total_xbtc_issuance);
 
         let xstaking = self.collect_xstaking().await?;
 
@@ -264,11 +277,10 @@ async fn main() -> Result<()> {
 
     let at = block_hash(&client, Some(block_number)).await?;
 
-    let builder = RegenesisBuilder::new(rpc, at);
-
-    let full_params = builder.build().await?;
+    let full_params = RegenesisBuilder::new(rpc, at).build().await?;
 
     let output_filename = format!("{}_regenesis_params.json", block_number);
+
     save_state(output_filename, &full_params)?;
 
     Ok(())
