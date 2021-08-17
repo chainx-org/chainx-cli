@@ -204,6 +204,8 @@ impl RegenesisBuilder {
         // Extract the referral id of each validator.
         let validators = self.rpc.get_validators(self.at).await?;
 
+        let validators_count = validators.len();
+
         let get_referral_id = |who: &AccountId| {
             let validator_profile = validators
                 .get(who)
@@ -215,6 +217,8 @@ impl RegenesisBuilder {
         let mut sum_of_validators = 0u128;
         // Extract the total nomination of each validator, for verification purpose.
         let validator_ledgers = self.rpc.get_validator_ledgers(self.at).await?;
+        // FIXME: should use xstaking_getValidators RPC as it's possible that some validator does
+        // not have the ValidatorLedger storage item due to no one has ever voted him.
         let validators = validator_ledgers
             .into_iter()
             .map(|(k, v)| {
@@ -226,6 +230,8 @@ impl RegenesisBuilder {
                 }
             })
             .collect::<Vec<_>>();
+
+        assert_eq!(validators.len(), validators_count);
 
         println!("sum_of_nominators: {}", sum_of_nominators);
         println!("sum_of_validators: {}", sum_of_validators);
@@ -258,14 +264,11 @@ impl RegenesisBuilder {
 #[async_std::main]
 async fn main() -> Result<()> {
     env_logger::init();
+    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
 
     let app = App::from_args();
 
-    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
-
     let client = build_client(app.url.clone()).await?;
-
-    let rpc = Rpc::new(app.url).await?;
 
     let block_number = if let Some(number) = app.block_number {
         number
@@ -275,6 +278,7 @@ async fn main() -> Result<()> {
 
     let at = block_hash(&client, Some(block_number)).await?;
 
+    let rpc = Rpc::new(app.url).await?;
     let full_params = RegenesisBuilder::new(rpc, at).build().await?;
 
     let output_filename = format!("{}_regenesis_params.json", block_number);
