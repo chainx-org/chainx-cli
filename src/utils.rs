@@ -51,6 +51,18 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
+pub async fn get_referral_id(
+    client: &ChainXClient,
+    who: &AccountId,
+    at: Option<Hash>,
+) -> Result<String> {
+    use crate::runtime::xpallets::xstaking::ValidatorsStoreExt;
+
+    let validator_profile = client.validators(who, at).await?;
+
+    Ok(String::from_utf8_lossy(&validator_profile.referral_id).to_string())
+}
+
 /// Builds a ChainX runtime specific client.
 pub async fn build_client<U: Into<String>>(url: U) -> Result<ChainXClient> {
     Ok(ClientBuilder::<ChainXRuntime>::new()

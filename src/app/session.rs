@@ -1,7 +1,7 @@
 use anyhow::Result;
-use subxt::session::ValidatorsStoreExt;
 
 use crate::{
+    frame::session::{NextKeysStoreExt, ValidatorsStoreExt},
     runtime::{primitives::BlockNumber, ChainXSigner},
     utils::{block_hash, build_client},
 };
@@ -14,6 +14,10 @@ pub enum Session {
         keys: String,
     },
     Validators {
+        #[structopt(long)]
+        block_number: Option<BlockNumber>,
+    },
+    NextKeys {
         #[structopt(long)]
         block_number: Option<BlockNumber>,
     },
@@ -33,6 +37,23 @@ impl Session {
                 todo!()
                 // let result = client.set_keys_and_watch(&signer, &call).await?;
                 // println!("{:#?}", result);
+            }
+
+            Self::NextKeys { block_number } => {
+                let at = block_hash(&client, block_number).await?;
+                let validators = client.validators(at).await?;
+
+                for validator in validators {
+                    let keys = client.next_keys(&validator, at).await?;
+                    if let Some(keys) = keys {
+                        let referral_id =
+                            crate::utils::get_referral_id(&client, &validator, at).await?;
+                        println!(
+                            "{:?}\n{}({}): {:#?}",
+                            validator, validator, referral_id, keys
+                        );
+                    }
+                }
             }
         }
 

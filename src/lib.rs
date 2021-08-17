@@ -1,4 +1,5 @@
 mod app;
+mod frame;
 pub mod rpc;
 pub mod runtime;
 mod serde;

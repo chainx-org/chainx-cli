@@ -10,11 +10,12 @@ use sp_runtime::{generic::Header, impl_opaque_keys, OpaqueExtrinsic};
 use subxt::{
     balances::{AccountData, Balances},
     extrinsic::DefaultExtra,
-    session::Session,
     sudo::Sudo,
     system::System,
     Client, PairSigner, Runtime,
 };
+
+use crate::frame::session::Session;
 
 use self::{
     primitives::*,
