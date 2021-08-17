@@ -48,7 +48,10 @@ impl Session {
                     if let Some(keys) = keys {
                         let referral_id =
                             crate::utils::get_referral_id(&client, &validator, at).await?;
-                        println!("{:?}\n{}({}): {:#?}", validator, validator, referral_id, keys);
+                        println!(
+                            "{:?}\n{}({}): {:#?}",
+                            validator, validator, referral_id, keys
+                        );
                     }
                 }
             }

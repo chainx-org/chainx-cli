@@ -1,6 +1,6 @@
 use anyhow::Result;
 use structopt::StructOpt;
-use subxt::balances::{LocksStoreExt, TransferCallExt, TransferEventExt, TotalIssuanceStoreExt};
+use subxt::balances::{LocksStoreExt, TotalIssuanceStoreExt, TransferCallExt, TransferEventExt};
 
 use crate::{
     runtime::{
@@ -63,7 +63,7 @@ impl Balances {
                     let locks = client.locks(&who, at).await?;
                     println!("{:?}: {:#?}", who, locks);
                 }
-                Storage::TotalIssuance {block_number} => {
+                Storage::TotalIssuance { block_number } => {
                     let at = block_hash(&client, block_number).await?;
                     let total_issuance = client.total_issuance(at).await?;
                     println!("Total issuance: {}", total_issuance);
