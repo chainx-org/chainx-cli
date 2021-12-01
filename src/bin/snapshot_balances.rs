@@ -59,7 +59,12 @@ where
     V: ?Sized + serde::Serialize,
 {
     let mut output = std::env::current_dir()?;
-    output.push(format!("{}_snapshot_{}.json", prefix, block_number));
+    if prefix.to_string().contains("airdrop") {
+        output.push(format!("{}.json", prefix));
+    } else {
+        output.push(format!("{}_snapshot_{}.json", prefix, block_number));
+    }
+
     let file = std::fs::OpenOptions::new()
         .create(true)
         .write(true)
@@ -79,6 +84,34 @@ struct BalanceRecord {
 struct KsxAccount {
     account_id: AccountId,
     free: Balance,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct SherpaXBalances{
+    pub balances: Vec<(AccountId, u128)>
+}
+impl SherpaXBalances {
+    fn from(b: Vec<(AccountId, u128)>) -> Self {
+        SherpaXBalances{
+            balances: b
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct SherpaXVesting {
+    // * who - Account which we are generating vesting configuration for
+    // * begin - Block when the account will start to vest
+    // * length - Number of blocks from `begin` until fully vested
+    // * liquid - Number of units which can be spent before vesting begins
+    pub vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)>
+}
+impl SherpaXVesting {
+    fn from(v: Vec<(AccountId, BlockNumber, BlockNumber, u128)>) -> Self {
+        SherpaXVesting {
+            vesting: v
+        }
+    }
 }
 
 #[async_std::main]
@@ -110,6 +143,9 @@ async fn main() -> Result<()> {
 
     let mut dust_count = 0;
     let mut dust_sum = 0;
+    // 5ScUq4UWtp4Tpve8e6YJoWhXDFpapVwiqxjk3drMtEvpR2y9
+    let x_association: AccountId = hex_literal::hex!("8387441be6459881fb86af8e36254d537a9d2b86374a553176380811163b7441").into();
+    let mut x_association_balance = 0;
 
     let (mut ksx_accounts, dust_accounts): (
         Vec<Option<BalanceRecord>>,
@@ -120,6 +156,11 @@ async fn main() -> Result<()> {
             let total = info.data.free + info.data.reserved;
 
             total_issuance += total;
+
+            if id == x_association {
+                x_association_balance = total;
+                return (None, None)
+            }
 
             let maybe_ignored = BalanceRecord {
                 account_id: id,
@@ -139,6 +180,8 @@ async fn main() -> Result<()> {
         .unzip();
 
     let treasury_account: AccountId = ModuleId(*b"pcx/trsy").into_account();
+    let mut treasury_balance = 0u128;
+    let mut new_treasury_balance = 0u128;
 
     let (ksx_accounts, dust_accounts): (Vec<_>, Vec<_>) = (
         ksx_accounts
@@ -146,8 +189,12 @@ async fn main() -> Result<()> {
             .flatten()
             .map(|record| {
                 if record.account_id == treasury_account {
-                    record.free += dust_sum;
-                    record.total += dust_sum;
+                    treasury_balance = record.total;
+
+                    record.free += x_association_balance;
+                    record.total += x_association_balance;
+
+                    new_treasury_balance = record.total;
                 }
                 KsxAccount {
                     free: record.total,
@@ -158,20 +205,106 @@ async fn main() -> Result<()> {
         dust_accounts.into_iter().flatten().collect(),
     );
 
+    let non_dust_balances: Vec<(AccountId, u128)> = ksx_accounts
+        .iter()
+        .map(|ksx_account|{
+            (ksx_account.account_id.clone(), ksx_account.free.saturating_mul(10_000_000_000))
+        })
+        .collect();
+    let dust_balances: Vec<(AccountId, u128)> = dust_accounts
+        .iter()
+        .map(|dust_account|{
+            (dust_account.account_id.clone(), dust_account.total.saturating_mul(10_000_000_000))
+        })
+        .collect();
+
     save_snapshot(block_number, "ksx_accounts", &ksx_accounts)?;
     save_snapshot(block_number, "dust_accounts", &dust_accounts)?;
 
-    println!("       Total issuance: {}", total_issuance);
+    println!("   On ChainX(decimals=8)  ");
+    println!("        Total issuance: {}", total_issuance);
     let total_accounts = ksx_accounts.len() + dust_accounts.len();
-    println!("       Total accounts: {}", total_accounts);
-    println!("         KSX accounts: {}", ksx_accounts.len());
-    println!("Dust accounts(< 1PCX): {}", dust_count);
-    println!("  Total dust balances: {}", dust_sum);
+    println!("        Total accounts: {}", total_accounts);
+    println!("          KSX accounts: {}", ksx_accounts.len());
+    println!(" Dust accounts(< 1PCX): {}", dust_count);
+    println!("   Total dust balances: {}", dust_sum);
+    println!("      Treasury balance: {}", treasury_balance);
+    println!(" X-association balance: {}", x_association_balance);
 
     // Verify
-    let total_ksx = ksx_accounts.iter().map(|r| r.free).sum::<Balance>();
-
+    let total_ksx = ksx_accounts
+        .iter()
+        .map(|r| r.free)
+        .chain(dust_accounts.iter().map(|d|d.total))
+        .sum::<Balance>();
     assert_eq!(total_ksx, total_issuance);
+
+    let total_balances = non_dust_balances
+        .iter()
+        .chain(dust_balances.iter())
+        .map(|(_, balance)|balance)
+        .sum::<u128>();
+
+    assert_eq!(total_ksx.saturating_mul(10_000_000_000), total_balances);
+    assert_eq!(total_accounts, non_dust_balances.len() + dust_balances.len());
+
+    let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = non_dust_balances
+        .iter()
+        .filter_map(|(account, balance)| {
+            if *account == treasury_account {
+               return None
+            }
+            // lock 90% balance for 90 days
+            Some((account.clone(), (90*24*60*5u32).into(), 1u32.into(), balance / 10))
+        })
+        .collect();
+
+    let vesting_liquid = vesting
+        .iter()
+        .map(|(_,_,_,free)|free)
+        .sum::<u128>();
+    let vest_balance = non_dust_balances
+        .iter()
+        .filter_map(|(account, balance)|{
+            if *account == treasury_account {
+                return None
+            }
+            Some(balance)
+        })
+        .sum::<u128>();
+
+    assert_eq!(vesting_liquid, vest_balance / 10);
+    assert_eq!(dust_count, dust_accounts.len());
+
+    assert_eq!(total_accounts, dust_accounts.len() + non_dust_balances.len());
+    assert_eq!(vesting.len(), non_dust_balances.len() - 1);
+
+    let total_dust = dust_balances.iter().map(|(_, b)|b).sum::<u128>();
+    assert_eq!(dust_sum.saturating_mul(10_000_000_000), total_dust);
+    let total_non_dust = non_dust_balances.iter().map(|(_, b)|b).sum::<u128>();
+    assert_eq!(total_balances.saturating_sub(dust_sum.saturating_mul(10_000_000_000)), total_non_dust);
+
+    let new_treasury_balance = new_treasury_balance.saturating_mul(10_000_000_000);
+    assert_eq!(total_balances, total_non_dust.saturating_add(total_dust));
+    assert_eq!(total_non_dust, vest_balance.saturating_add(new_treasury_balance));
+
+    println!("==========================");
+    println!("  On SherpaX(decimals=18) ");
+    println!("       Total issuance:  {}", total_balances);
+    println!("       Total accounts:  {}", total_accounts);
+    println!(" Dust accounts(< 1KCX): {}", dust_accounts.len());
+    println!("    Total dust balance: {}", total_dust);
+    println!("     Non-dust accounts: {}", non_dust_balances.len());
+    println!("Total non-dust balance: {}", total_non_dust);
+    println!("         Vest accounts: {}", vesting.len());
+    println!("        Vesting liquid: {}", vesting_liquid);
+    println!("    Total vest balance: {}", vest_balance);
+    println!("      Treasury balance: {}", new_treasury_balance);
+    println!(" X-association balance: 0");
+
+    save_snapshot(block_number, "non_dust_airdrop", &SherpaXBalances::from(non_dust_balances))?;
+    save_snapshot(block_number, "dust_airdrop", &SherpaXBalances::from(dust_balances))?;
+    save_snapshot(block_number, "vesting_airdrop", &SherpaXVesting::from(vesting))?;
 
     Ok(())
 }
