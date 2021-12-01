@@ -304,7 +304,7 @@ async fn main() -> Result<()> {
 
     let non_dust_prefix = format!("non_dust_airdrop_{}_{}", non_dust_balances.len(), total_non_dust);
     let dust_prefix = format!("dust_airdrop_{}_{}", dust_accounts.len(), total_dust);
-    let vesting_prefix = format!("vesting_airdrop_{}_{}", vesting.len(), vest_balance);
+    let vesting_prefix = format!("vesting_airdrop_{}_{}", vesting.len(), vesting_liquid);
 
     save_snapshot(block_number, non_dust_prefix , &SherpaXBalances::from(non_dust_balances))?;
     save_snapshot(block_number, dust_prefix, &SherpaXBalances::from(dust_balances))?;
