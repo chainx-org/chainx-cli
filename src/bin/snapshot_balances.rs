@@ -302,9 +302,13 @@ async fn main() -> Result<()> {
     println!("      Treasury balance: {}", new_treasury_balance);
     println!(" X-association balance: 0");
 
-    save_snapshot(block_number, "non_dust_airdrop", &SherpaXBalances::from(non_dust_balances))?;
-    save_snapshot(block_number, "dust_airdrop", &SherpaXBalances::from(dust_balances))?;
-    save_snapshot(block_number, "vesting_airdrop", &SherpaXVesting::from(vesting))?;
+    let non_dust_prefix = format!("non_dust_airdrop_{}_{}", non_dust_balances.len(), total_non_dust);
+    let dust_prefix = format!("dust_airdrop_{}_{}", dust_accounts.len(), total_dust);
+    let vesting_prefix = format!("vesting_airdrop_{}_{}", vesting.len(), vest_balance);
+
+    save_snapshot(block_number, non_dust_prefix , &SherpaXBalances::from(non_dust_balances))?;
+    save_snapshot(block_number, dust_prefix, &SherpaXBalances::from(dust_balances))?;
+    save_snapshot(block_number, vesting_prefix, &SherpaXVesting::from(vesting))?;
 
     Ok(())
 }
