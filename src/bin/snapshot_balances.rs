@@ -121,7 +121,7 @@ async fn main() -> Result<()> {
     let account_info = rpc.get_accounts_info(at).await?;
 
     /// Minimum balance to receive KSX airdrop.
-    const MINIMUM_AIRDROP_BALANCE: Balance = 100_000_000;
+    const MINIMUM_AIRDROP_BALANCE: Balance = 10_000_000_000;
 
     let mut total_issuance = 0u128;
 
@@ -210,7 +210,7 @@ async fn main() -> Result<()> {
     let total_accounts = ksx_accounts.len() + dust_accounts.len();
     println!("        Total accounts: {}", total_accounts);
     println!("          KSX accounts: {}", ksx_accounts.len());
-    println!(" Dust accounts(< 1PCX): {}", dust_count);
+    println!("Dust accounts(<100PCX): {}", dust_count);
     println!("   Total dust balances: {}", dust_sum);
     println!("      Treasury balance: {}", treasury_balance);
     println!(" X-association balance: {}", x_association_balance);
@@ -246,15 +246,15 @@ async fn main() -> Result<()> {
     println!("  On SherpaX(decimals=18) ");
     println!("       Total issuance:  {}", total_balances);
     println!("       Total accounts:  {}", total_accounts);
-    println!(" Dust accounts(< 1KCX): {}", dust_accounts.len());
+    println!("Dust accounts(<100KSX): {}", dust_accounts.len());
     println!("    Total dust balance: {}", total_dust);
     println!("     Non-dust accounts: {}", non_dust_balances.len());
     println!("Total non-dust balance: {}", total_non_dust);
     println!("      Treasury balance: {}", new_treasury_balance);
     println!(" X-association balance: 0");
 
-    let non_dust_prefix = format!("non_dust_airdrop_{}_{}", non_dust_balances.len(), total_non_dust);
-    let dust_prefix = format!("dust_airdrop_{}_{}", dust_accounts.len(), total_dust);
+    let non_dust_prefix = format!("non_dust_100ksx_airdrop_{}_{}", non_dust_balances.len(), total_non_dust);
+    let dust_prefix = format!("dust_100ksx_airdrop_{}_{}", dust_accounts.len(), total_dust);
 
     save_snapshot(block_number, non_dust_prefix , &SherpaXBalances::from(non_dust_balances))?;
     save_snapshot(block_number, dust_prefix, &SherpaXBalances::from(dust_balances))?;

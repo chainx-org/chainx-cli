@@ -32,19 +32,19 @@ $ ./target/release/snapshot_balances --url ws://127.0.0.1:8087 --block-number 27
    On ChainX(decimals=8)  
         Total issuance: 1050000000000000
         Total accounts: 18165
-          KSX accounts: 7418
- Dust accounts(< 1PCX): 10747
-   Total dust balances: 82628223512
+          KSX accounts: 3686
+Dust accounts(<100PCX): 14479
+   Total dust balances: 10334549251431
       Treasury balance: 94591231912999
  X-association balance: 12090344828274
 ==========================
   On SherpaX(decimals=18) 
        Total issuance:  10500000000000000000000000
        Total accounts:  18165
- Dust accounts(< 1KCX): 10747
-    Total dust balance: 826282235120000000000
-     Non-dust accounts: 7418
-Total non-dust balance: 10499173717764880000000000
+Dust accounts(<100KSX): 14479
+    Total dust balance: 103345492514310000000000
+     Non-dust accounts: 3686
+Total non-dust balance: 10396654507485690000000000
       Treasury balance: 1066815767412730000000000
  X-association balance: 0
 ```
