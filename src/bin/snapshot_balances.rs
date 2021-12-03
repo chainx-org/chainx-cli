@@ -98,22 +98,6 @@ impl SherpaXBalances {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
-struct SherpaXVesting {
-    // * who - Account which we are generating vesting configuration for
-    // * begin - Block when the account will start to vest
-    // * length - Number of blocks from `begin` until fully vested
-    // * liquid - Number of units which can be spent before vesting begins
-    pub vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)>
-}
-impl SherpaXVesting {
-    fn from(v: Vec<(AccountId, BlockNumber, BlockNumber, u128)>) -> Self {
-        SherpaXVesting {
-            vesting: v
-        }
-    }
-}
-
 #[async_std::main]
 async fn main() -> Result<()> {
     env_logger::init();
@@ -247,37 +231,8 @@ async fn main() -> Result<()> {
 
     assert_eq!(total_ksx.saturating_mul(10_000_000_000), total_balances);
     assert_eq!(total_accounts, non_dust_balances.len() + dust_balances.len());
-
-    let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = non_dust_balances
-        .iter()
-        .filter_map(|(account, balance)| {
-            if *account == treasury_account {
-               return None
-            }
-            // lock 90% balance for 90 days
-            Some((account.clone(), (90*24*60*5u32).into(), 1u32.into(), balance / 10))
-        })
-        .collect();
-
-    let vesting_liquid = vesting
-        .iter()
-        .map(|(_,_,_,free)|free)
-        .sum::<u128>();
-    let vest_balance = non_dust_balances
-        .iter()
-        .filter_map(|(account, balance)|{
-            if *account == treasury_account {
-                return None
-            }
-            Some(balance)
-        })
-        .sum::<u128>();
-
-    assert_eq!(vesting_liquid, vest_balance / 10);
     assert_eq!(dust_count, dust_accounts.len());
-
     assert_eq!(total_accounts, dust_accounts.len() + non_dust_balances.len());
-    assert_eq!(vesting.len(), non_dust_balances.len() - 1);
 
     let total_dust = dust_balances.iter().map(|(_, b)|b).sum::<u128>();
     assert_eq!(dust_sum.saturating_mul(10_000_000_000), total_dust);
@@ -286,7 +241,6 @@ async fn main() -> Result<()> {
 
     let new_treasury_balance = new_treasury_balance.saturating_mul(10_000_000_000);
     assert_eq!(total_balances, total_non_dust.saturating_add(total_dust));
-    assert_eq!(total_non_dust, vest_balance.saturating_add(new_treasury_balance));
 
     println!("==========================");
     println!("  On SherpaX(decimals=18) ");
@@ -296,19 +250,14 @@ async fn main() -> Result<()> {
     println!("    Total dust balance: {}", total_dust);
     println!("     Non-dust accounts: {}", non_dust_balances.len());
     println!("Total non-dust balance: {}", total_non_dust);
-    println!("         Vest accounts: {}", vesting.len());
-    println!("        Vesting liquid: {}", vesting_liquid);
-    println!("    Total vest balance: {}", vest_balance);
     println!("      Treasury balance: {}", new_treasury_balance);
     println!(" X-association balance: 0");
 
     let non_dust_prefix = format!("non_dust_airdrop_{}_{}", non_dust_balances.len(), total_non_dust);
     let dust_prefix = format!("dust_airdrop_{}_{}", dust_accounts.len(), total_dust);
-    let vesting_prefix = format!("vesting_airdrop_{}_{}", vesting.len(), vesting_liquid);
 
     save_snapshot(block_number, non_dust_prefix , &SherpaXBalances::from(non_dust_balances))?;
     save_snapshot(block_number, dust_prefix, &SherpaXBalances::from(dust_balances))?;
-    save_snapshot(block_number, vesting_prefix, &SherpaXVesting::from(vesting))?;
 
     Ok(())
 }
