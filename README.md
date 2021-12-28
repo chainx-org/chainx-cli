@@ -26,28 +26,59 @@ $ cargo build --release
 $ ./target/release/chainx-cli --help
 ```
 
+## snapshot_balances
 ```bash
-$ cargo build --release --bin snapshot_balances
-$ ./target/release/snapshot_balances --url ws://127.0.0.1:8087 --block-number 2761158
-   On ChainX(decimals=8)  
+$ cargo build --release --bin snapshot_balances 
+```
+
+
+1. ChainX 2.0 snapshot1 on block 2761158, min-balance=100000000
+```bash
+$ ./target/release/snapshot_balances --block-number=2761158 --url=ws://47.99.179.60:18087 --min-balance=100000000
+On ChainX(decimals=8)
         Total issuance: 1050000000000000
         Total accounts: 18165
-          KSX accounts: 3686
-Dust accounts(<100PCX): 14479
-   Total dust balances: 10334549251431
+     Non-dust accounts: 7418
+ Dust accounts(<1 PCX): 10747
+   Total dust balances: 82628223512
       Treasury balance: 94591231912999
  X-association balance: 12090344828274
 ==========================
-  On SherpaX(decimals=18) 
-       Total issuance:  10500000000000000000000000
-       Total accounts:  18165
-Dust accounts(<100KSX): 14479
-    Total dust balance: 103345492514310000000000
-     Non-dust accounts: 3686
-Total non-dust balance: 10396654507485690000000000
-      Treasury balance: 1066815767412730000000000
+  On SherpaX(decimals=18)
+     Total airdrop ksx: 10500000000000000000000000
+        Total accounts: 18165
+     Non-dust accounts: 7418
+ Dust accounts(<1 KSX): 0
+   Total dust balances: 0
+      Treasury balance: 1067642049647850000000000
  X-association balance: 0
+Total non-dust balance: 10500000000000000000000000
+
 ```
+
+2. ChainX 3.0 snapshot2 on block 1949100, min-balance=1
+```bash
+$ ./target/release/snapshot_balances  --block-number=1949100 --url=ws://47.99.179.60:8087 --min-balance=1
+   On ChainX(decimals=8)  
+        Total issuance: 1195762470000000
+        Total accounts: 22351
+     Non-dust accounts: 22220
+ Dust accounts(<1 PCX): 131
+   Total dust balances: 0
+      Treasury balance: 118071346280056
+ X-association balance: 1526137095776
+==========================
+  On SherpaX(decimals=18) 
+     Total airdrop ksx: 11957624700000000000000000
+        Total accounts: 22351
+     Non-dust accounts: 22220
+ Dust accounts(<1 KSX): 0
+   Total dust balances: 0
+      Treasury balance: 1195974833758320000000000
+ X-association balance: 0
+Total non-dust balance: 11957624700000000000000000
+```
+
 ## License
 
 [GPL v3](./LICENSE)
