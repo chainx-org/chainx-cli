@@ -2,6 +2,7 @@ use chainx_cli::{
     runtime::primitives::{AccountId, BlockNumber},
 };
 use anyhow::Result;
+use std::collections::BTreeMap;
 
 use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat};
 use sp_runtime::{
@@ -299,13 +300,24 @@ pub mod configs {
     }
 
     pub fn check_origin_duplicate() {
-        let mut balances: Vec<(AccountId, u128)> = origin_balances()
+        let balances: Vec<(AccountId, u128)> = origin_balances()
             .unwrap()
             .into_iter()
             .flat_map(|s| s.balances)
-            .collect();
+            .fold(
+                BTreeMap::<AccountId, u128>::new(),
+                |mut acc, (account_id, amount)| {
+                    if let Some(_) = acc.get_mut(&account_id) {
+                        println!("duplicate account = {:?}", account_id);
+                    } else {
+                        acc.insert(account_id.clone(), amount);
+                    }
 
-        balances.dedup_by_key(|(account, _)| account.clone());
+                    acc
+                }
+            )
+            .into_iter()
+            .collect();
 
         assert_eq!(
             7418 + 334721 + 1873,
