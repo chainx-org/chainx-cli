@@ -83,6 +83,18 @@ Minim balance for dust: 10000000000
 Total non-dust balance: 11985224700000000000000000
 ```
 
+## generate_airdrop
+```bash
+$ cargo build --release --bin generate_airdrop 
+```
+
+```bash
+$ ./target/release/generate_airdrop 
+treasury balance: 1067642049647850000000000
+total genesis balances: 10103205024727960000000000
+total genesis accounts: 344012
+
+```
 ## License
 
 [GPL v3](./LICENSE)

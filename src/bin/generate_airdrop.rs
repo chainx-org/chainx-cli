@@ -69,10 +69,10 @@ pub mod configs {
                 balances!(
                     concat!(
                         env!("CARGO_MANIFEST_DIR"),
-                        "/origin_comingchat_miners_decimal_8.json"
+                        "/origin_comingchat_miners_334721_214074281900000_decimal_8.json"
                     ),
-                    252706,
-                    146256930040000
+                    334721,
+                    214074281900000
                 ),
                 balances!(
                     concat!(
@@ -99,10 +99,10 @@ pub mod configs {
         let ss2 = balances!(
                     concat!(
                         env!("CARGO_MANIFEST_DIR"),
-                        "/origin_chainx_snapshot2_non_dust_22220_11957624700000000000000000_on_1949100.json"
+                        "/origin_chainx_snapshot2_non_dust_22295_11985224700000000000000000_on_2004141.json"
                     ),
-                    22220,
-                    11957624700000000000000000
+                    22295,
+                    11985224700000000000000000
                 );
 
         // Skip 5S7WgdAXVK7mh8REvXfk9LdHs3Xqu9B2E9zzY8e4LE8Gg2ZX
@@ -182,18 +182,18 @@ pub mod configs {
                 balances!(
                     concat!(
                         env!("CARGO_MANIFEST_DIR"),
-                        "/genesis_balances_chainx_snapshot_7418_7873700047225540000000000.json"
+                        "/genesis_balances_chainx_snapshot_7418_7868415220855310000000000.json"
                     ),
                     7418,
-                    7873700047225540000000000u128
+                    7868415220855310000000000u128
                 ),
                 balances!(
                     concat!(
                         env!("CARGO_MANIFEST_DIR"),
-                        "/genesis_balances_comingchat_miners_252706_1462569300400000000000000.json"
+                        "/genesis_balances_comingchat_miners_334721_2140742819000000000000000.json"
                     ),
-                    252706,
-                    1462569300400000000000000u128
+                    334721,
+                    2140742819000000000000000u128
                 ),
                 balances!(
                     concat!(
@@ -218,16 +218,16 @@ pub mod configs {
 
         assert_eq!(
             balances.len(),
-            7418 + 252706 + 1873,
+            7418 + 334721 + 1873,
             "Need manual process duplicate account balance"
         );
 
         let total = balances.iter().map(|(_, b)| b).sum::<u128>();
         assert_eq!(
             total,
-            7873700047225540000000000u128
-                .saturating_add(1462569300400000000000000)
-                .saturating_add(94046984872650000000000),
+            7868415220855310000000000u128
+                .saturating_add(2140742819000000000000000u128)
+                .saturating_add(94046984872650000000000u128),
         );
 
         println!("total genesis balances: {:?}", total);
@@ -240,9 +240,9 @@ pub mod configs {
 
     pub fn balances_comingchat_mine() -> Result<Vec<SherpaXBalances>, String> {
         let mut origin = balances!(
-            concat!(env!("CARGO_MANIFEST_DIR"), "/origin_comingchat_miners_decimal_8.json"),
-            252706,
-            146256930040000u128
+            concat!(env!("CARGO_MANIFEST_DIR"), "/origin_comingchat_miners_334721_214074281900000_decimal_8.json"),
+            334721,
+            214074281900000u128
         );
 
         translate_decimal_from_8_to_18_balances(&mut origin);
@@ -250,7 +250,7 @@ pub mod configs {
         origin.balances.sort_unstable_by_key(|(_, b)| *b);
 
         to_file::<SherpaXBalances>(
-            "genesis_balances_comingchat_miners_252706_1462569300400000000000000",
+            "genesis_balances_comingchat_miners_334721_2140742819000000000000000",
             &origin
         )
             .map_err(|e| format!("{:?}", e))?;
@@ -285,7 +285,7 @@ pub mod configs {
         balances.dedup_by_key(|(account, _)| account.clone());
 
         assert_eq!(
-            7418 + 252706 + 1873,
+            7418 + 334721 + 1873,
             balances.len(),
             "Need manual process duplicate account balance"
         )
@@ -314,13 +314,13 @@ pub mod configs {
 
         assert_eq!(
             vesting_accounts,
-            7418 + 252706 + 1873 - 1
+            7418 + 334721 + 1873 - 1
         );
         assert_eq!(
             vesting_free.saturating_mul(10),
-            7873700047225540000000000u128
-                .saturating_add(1462569300400000000000000)
-                .saturating_add(94046984872650000000000)
+            7868415220855310000000000u128
+                .saturating_add(2140742819000000000000000u128)
+                .saturating_add(94046984872650000000000u128)
                 .saturating_sub(1067642049647850000000000)
         );
 
