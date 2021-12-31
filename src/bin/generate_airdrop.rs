@@ -231,6 +231,21 @@ pub mod configs {
         )
     }
 
+    pub fn duplicate_contributors_in_vesting() -> Result<Vec<SherpaXBalances>, String> {
+        Ok(
+            vec![
+                balances!(
+                    concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/handle_duplicate_contributors_in_genesis_vesting_35_617479000000000000000.json"
+                    ),
+                    35,
+                    617479000000000000000u128
+                ),
+            ]
+        )
+    }
+
     pub fn check_genesis_balances() {
         let mut balances: Vec<(AccountId, u128)> = genesis_balances()
             .unwrap()
@@ -319,25 +334,65 @@ pub mod configs {
             .into_iter()
             .collect();
 
-        assert_eq!(
-            7418 + 334721 + 1873,
-            balances.len(),
-            "Need manual process duplicate account balance"
-        )
+        if 7418 + 334721 + 1873 != balances.len() {
+            println!("Need manual process duplicate account balance.(ignore if handled)");
+        }
     }
 
     pub fn to_vesting_genesis() -> Result<SherpaXVesting, String> {
         // Skip 5S7WgdAXVK7mh8REvXfk9LdHs3Xqu9B2E9zzY8e4LE8Gg2ZX
         let treasury_account: AccountId = ModuleId(*b"pcx/trsy").into_account();
 
-        let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = vesting_balances()?
+        // 5 duplicate vesting accounts
+        // 5QNvL6E6qfKBhV2VnvdLbdv2ou4VmU7FDFJ43XvcnuKgzpUp
+        // 5RzPeQuqw3N2iXFsPeYjyy6zTxtuvmvDfS1ySq76n98SgFoH
+        // 5UBCtW2xp3MUWvs1N7GDAy7MwzF6jFQrMutPK8CfR45542Kt
+        // 5TraeAv7X4izwUGkfYh4GFFuDdmjmAkHYGg1NitY5rWrXdcB
+        // 5T8E3ZgvtHdZfEwsfZ9bZE5VCixUfCYS764We7xVuvQDbVrU
+        let deduplicate: Vec<(AccountId, u128)> = vesting_balances()?
             .into_iter()
             .flat_map(|s| s.balances)
+            .fold(
+                BTreeMap::<AccountId, u128>::new(),
+                |mut acc, (account_id, amount)| {
+                    if let Some(balance) = acc.get_mut(&account_id) {
+                        *balance = balance
+                            .checked_add(amount)
+                            .expect("balance cannot overflow when building vesting");
+                    } else {
+                        acc.insert(account_id.clone(), amount);
+                    }
+
+                    acc
+                }
+            )
+            .into_iter()
+            .collect();
+
+        // 35 duplicate contributors
+        let contributors_map: BTreeMap::<AccountId, u128> = duplicate_contributors_in_vesting()
+            .unwrap()
+            .into_iter()
+            .flat_map(|s| s.balances)
+            .collect();
+
+        let mut total = 0u128;
+        let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = deduplicate
+            .into_iter()
             .filter_map(|(account, free)|{
                 if account == treasury_account {
                     return None
                 }
-                Some((account, 1296000, 2592000, free.saturating_div(10u128)))
+
+                let genesis_free = if let Some(b) = contributors_map.get(&account) {
+                    free.saturating_div(10u128).saturating_add(*b)
+                } else {
+                    free.saturating_div(10u128)
+                };
+
+                total = total + free;
+
+                Some((account, 1296000, 2592000, genesis_free))
             })
             .collect();
 
@@ -347,15 +402,20 @@ pub mod configs {
             .sum::<u128>();
         let vesting_accounts = vesting.len();
 
+        total = total.saturating_add(617479000000000000000u128);
+
+        println!("total genesis vesting: {:?}", total);
+
         assert_eq!(
             vesting_accounts,
-            7418 + 334721 - 1
+            7418 + 334721 - 1 - 5
         );
         assert_eq!(
-            vesting_free.saturating_mul(10),
+            total,
             7868415220855310000000000u128
                 .saturating_add(2140742819000000000000000u128)
-                .saturating_sub(1067642049647850000000000)
+                .saturating_add(617479000000000000000u128)
+                .saturating_sub(1067642049647850000000000u128)
         );
 
         let v = SherpaXVesting{ vesting };
