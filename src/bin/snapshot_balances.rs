@@ -210,7 +210,8 @@ async fn main() -> Result<()> {
     let total_accounts = non_dust_accounts.len() + dust_accounts.len();
     println!("        Total accounts: {}", total_accounts);
     println!("     Non-dust accounts: {}", non_dust_accounts.len());
-    println!(" Dust accounts(<1 PCX): {}", dust_count);
+    println!("Minim balance for dust: {}", min_balance);
+    println!("         Dust accounts: {}", dust_count);
     println!("   Total dust balances: {}", dust_sum);
     println!("      Treasury balance: {}", treasury_balance);
     println!(" X-association balance: {}", x_association_balance);
@@ -245,7 +246,8 @@ async fn main() -> Result<()> {
     println!("     Total airdrop ksx: {}", total_ksx);
     println!("        Total accounts: {}", total_accounts);
     println!("     Non-dust accounts: {}", non_dust_balances.len());
-    println!(" Dust accounts(<1 KSX): 0");
+    println!("Minim balance for dust: {}", min_balance.saturating_mul(10_000_000_000));
+    println!("         Dust accounts: 0");
     println!("   Total dust balances: 0");
     println!("      Treasury balance: {}", new_treasury_balance);
     println!(" X-association balance: 0");
