@@ -207,6 +207,29 @@ pub mod configs {
         )
     }
 
+    pub fn vesting_balances() -> Result<Vec<SherpaXBalances>, String> {
+        Ok(
+            vec![
+                balances!(
+                    concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/genesis_balances_chainx_snapshot_7418_7868415220855310000000000.json"
+                    ),
+                    7418,
+                    7868415220855310000000000u128
+                ),
+                balances!(
+                    concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/genesis_balances_comingchat_miners_334721_2140742819000000000000000.json"
+                    ),
+                    334721,
+                    2140742819000000000000000u128
+                ),
+            ]
+        )
+    }
+
     pub fn check_genesis_balances() {
         let mut balances: Vec<(AccountId, u128)> = genesis_balances()
             .unwrap()
@@ -295,7 +318,7 @@ pub mod configs {
         // Skip 5S7WgdAXVK7mh8REvXfk9LdHs3Xqu9B2E9zzY8e4LE8Gg2ZX
         let treasury_account: AccountId = ModuleId(*b"pcx/trsy").into_account();
 
-        let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = genesis_balances()?
+        let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u128)> = vesting_balances()?
             .into_iter()
             .flat_map(|s| s.balances)
             .filter_map(|(account, free)|{
@@ -314,13 +337,12 @@ pub mod configs {
 
         assert_eq!(
             vesting_accounts,
-            7418 + 334721 + 1873 - 1
+            7418 + 334721 - 1
         );
         assert_eq!(
             vesting_free.saturating_mul(10),
             7868415220855310000000000u128
                 .saturating_add(2140742819000000000000000u128)
-                .saturating_add(94046984872650000000000u128)
                 .saturating_sub(1067642049647850000000000)
         );
 
