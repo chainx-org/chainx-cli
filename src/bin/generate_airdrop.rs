@@ -30,7 +30,7 @@ pub struct SherpaXSchedule {
     // * locked - Locked amount at genesis.
     // * per_block - Amount that gets unlocked every block after `starting_block`.
     // * starting_block - Starting block for unlocking(vesting).
-    pub schedules: Vec<(AccountId, u128, u128, BlockNumber)>
+    pub schedules: Vec<(AccountId, String, String, BlockNumber)>
 }
 
 macro_rules! balances {
@@ -444,8 +444,12 @@ pub mod configs {
         assert_eq!(schedules.len(), accounts);
         assert_eq!(total_locks, total);
 
+        let schedules_format: Vec<(AccountId, String, String, BlockNumber)> = schedules
+            .into_iter()
+            .map(|s| (s.0, format!("{}", s.1), format!("{}", s.2), s.3))
+            .collect();
         let prefix = format!("transfer_vesting_{}_{}", accounts, total);
-        to_file::<SherpaXSchedule>(&prefix, &SherpaXSchedule{ schedules })
+        to_file::<SherpaXSchedule>(&prefix, &SherpaXSchedule{ schedules: schedules_format })
             .map_err(|e| format!("{:?}", e))
     }
 
