@@ -1,6 +1,6 @@
 [package]
 name = "chainx-cli"
-version = "2.0.0-alpha.0"
+version = "4.0.0"
 authors = ["The ChainX Authors"]
 edition = "2018"
 description = "Rust Command Line Interface for ChainX 2.0 based on substrate-subxt"
@@ -8,38 +8,21 @@ readme = "README.md"
 license = "LICENSE"
 
 [[bin]]
-name = "chainx-cli"
-path = "src/bin/cli.rs"
+path = "src/bin/regenesis.rs"
+name = "regenesis"
 
-[[bin]]
-name = "chainx-verify"
-path = "src/bin/verify/mod.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0"
-async-std = { version = "1.6.2", features = ["attributes"] }
-codec = { package = "parity-scale-codec", version = "1.3.4", default-features = false, features = ["derive", "full"] }
-env_logger = "0.8.1"
-hex = "0.4"
-hex-literal = "0.3.1"
-jsonrpsee = { version = "0.1", features = ["ws"] }
+async-std = { version = "1.9.0", features = ["attributes", "tokio1"] }
+env_logger = "0.9.0"
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive", "full", "bit-vec"] }
+hex = "0.4.3"
+sp-core = { package = "sp-core", git = "https://github.com/paritytech//substrate", branch = "polkadot-v0.9.11" }
+sp-keyring = { package = "sp-keyring", git = "https://github.com/paritytech//substrate", branch = "polkadot-v0.9.11" }
+structopt = "0.3.25"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-structopt = "0.3"
-subxt = { package = "substrate-subxt", git = "https://github.com/paritytech/substrate-subxt", rev = "5a0201c1303ed6b68339c9a24175c21a7e154974" }
 
-sc-cli = { version = "0.8.1", optional = true }
-
-frame-support = "2.0.1"
-sp-authority-discovery = "2.0.1"
-sp-consensus-babe = "0.8.1"
-sp-core = "2.0.1"
-sp-finality-grandpa = "2.0.1"
-sp-keyring = "2.0.1"
-sp-runtime = "2.0.1"
-
-pallet-indices = "2.0.1"
-pallet-im-online = "2.0.1"
-
-[features]
-default = ["sc-cli"]
+subxt = { git = "https://github.com/chainx-org/substrate-subxt.git", branch = "polkadot-v0.9.11" }
