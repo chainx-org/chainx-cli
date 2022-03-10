@@ -233,7 +233,8 @@ impl RegenesisBuilder {
         while let Some((key1_key2, nominator_ledger)) = nominations.next().await? {
             let (nominator, nominee) = to_account_and_account(&key1_key2)?;
             let entry = nominations_map.entry(nominator).or_default();
-            entry.insert(nominee, nominator_ledger);
+
+            assert!(entry.insert(nominee, nominator_ledger).is_none());
         }
 
         let nominators = nominations_map
@@ -285,9 +286,7 @@ impl RegenesisBuilder {
 
             let account = to_account(&key1, TWOX_HASH_LEN)?;
 
-            assert!(validators_map
-                .insert(account, info.total_nomination)
-                .is_none())
+            assert!(validators_map.insert(account, info.total_nomination).is_none())
         }
 
         let mut validators = self
