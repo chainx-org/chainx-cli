@@ -215,6 +215,8 @@ impl RegenesisBuilder {
     }
 
     async fn collect_xstaking(&self) -> Result<XStakingParams> {
+        // Extract the amount of each nomination record.
+
         let mut nominations = self
             .api
             .storage()
@@ -234,7 +236,6 @@ impl RegenesisBuilder {
             entry.insert(nominee, nominator_ledger);
         }
 
-        // Extract the amount of each nomination record.
         let nominators = nominations_map
             .into_iter()
             .filter_map(|(nominator, nominee_map)| {
@@ -264,24 +265,9 @@ impl RegenesisBuilder {
             })
             .collect::<Vec<_>>();
 
-        let mut validators = self
-            .api
-            .storage()
-            .x_staking()
-            .validators_iter(self.at)
-            .await?;
-
-        let mut validators_count = 0usize;
-        let mut validators_referral_id = BTreeMap::<AccountId, String>::new();
-
-        // Extract the referral id of each validator.
-        while let Some((key1, profile)) = validators.next().await? {
-            validators_count += 1;
-
-            let referral_id = String::from_utf8_lossy(&profile.referral_id).to_string();
-
-            validators_referral_id.insert(to_account(&key1, TWOX_HASH_LEN)?, referral_id);
-        }
+        // Extract the total nomination of each validator, for verification purpose.
+        // Use Validators storage as it's possible that some validator does
+        // not have the ValidatorLedger storage item due to no one has ever voted him.
 
         let mut validator_ledgers = self
             .api
@@ -290,22 +276,43 @@ impl RegenesisBuilder {
             .validator_ledgers_iter(self.at)
             .await?;
 
-        // FIXME: should use xstaking_getValidators RPC as it's possible that some validator does
-        // not have the ValidatorLedger storage item due to no one has ever voted him.
         let mut sum_of_validators = 0u128;
-        let mut validator_infos = Vec::<ValidatorInfo>::new();
+        let mut validators_map = BTreeMap::<AccountId, Balance>::new();
 
-        // Extract the total nomination of each validator, for verification purpose.
+        // Retrieve ValidatorLedgers storage
         while let Some((key1, info)) = validator_ledgers.next().await? {
             sum_of_validators += info.total_nomination;
 
             let account = to_account(&key1, TWOX_HASH_LEN)?;
 
+            assert!(validators_map
+                .insert(account, info.total_nomination)
+                .is_none())
+        }
+
+        let mut validators = self
+            .api
+            .storage()
+            .x_staking()
+            .validators_iter(self.at)
+            .await?;
+
+        let mut validators_count = 0usize;
+        let mut validator_infos = Vec::<ValidatorInfo>::new();
+
+        // Retrieve Validators storage
+        while let Some((key1, profile)) = validators.next().await? {
+            validators_count += 1;
+
+            let account = to_account(&key1, TWOX_HASH_LEN)?;
+            let referral_id = String::from_utf8_lossy(&profile.referral_id).to_string();
+            let total_nomination = validators_map.get(&account).map(|b| *b).unwrap_or_default();
+
             validator_infos.push(ValidatorInfo {
-                referral_id: validators_referral_id.get(&account).unwrap().clone(),
+                referral_id,
                 who: account,
-                total_nomination: info.total_nomination,
-            })
+                total_nomination,
+            });
         }
 
         // Sort validators in ascending order by total_nomination
