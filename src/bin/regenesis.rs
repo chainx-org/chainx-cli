@@ -28,7 +28,7 @@ type Hash = <DefaultConfig as Config>::Hash;
 type AccountId = <DefaultConfig as Config>::AccountId;
 
 #[subxt::subxt(
-    runtime_metadata_path = "chainx_v4_dev_metadata.scale",
+    runtime_metadata_path = "chainx_v4_metadata.scale",
     generated_type_derives = "Clone, Debug"
 )]
 pub mod chainx_v4 {}

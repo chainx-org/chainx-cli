@@ -12,9 +12,9 @@
 ```bash
 cargo install subxt-cli
 
-// chain=dev
-subxt metadata -f bytes --url http://localhost:8086 > chainx_v4_dev_metadata.scale
-subxt metadata -f json --url http://localhost:8086 > chainx_v4_dev_metadata.json
-subxt codegen --url http://localhost:8086 > chainx_v4_dev_metadata.rs
+// chain=mainnet
+subxt metadata -f bytes --url http://localhost:8086 > chainx_v4_metadata.scale
+subxt metadata -f json --url http://localhost:8086 > chainx_v4_metadata.json
+subxt codegen --url http://localhost:8086 > chainx_v4_metadata.rs
 ```
 
